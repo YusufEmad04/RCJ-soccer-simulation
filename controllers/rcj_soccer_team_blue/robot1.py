@@ -6,6 +6,7 @@ import math
 # You can also import scripts that you put into the folder with controller
 from rcj_soccer_robot import RCJSoccerRobot, TIME_STEP
 import utils
+import functions
 
 
 class MyRobot1(RCJSoccerRobot):
@@ -34,15 +35,27 @@ class MyRobot1(RCJSoccerRobot):
 
                 # Compute the speed for motors
                 direction = utils.get_direction(ball_data['direction'])
+                ball_angle = functions.get_angle(ball_data["direction"])
+
+                if ball_angle < 20 or ball_angle > 340:
+                    left_speed = -5
+                    right_speed = -5
+                elif ball_angle > 180:
+                    left_speed = 4
+                    right_speed = -4
+                else:
+                    left_speed = -4
+                    right_speed = 4
 
                 # If the robot has the ball right in front of it, go forward,
                 # rotate otherwise
-                if direction == 0:
-                    left_speed = -5
-                    right_speed = -5
-                else:
-                    left_speed = direction * 4
-                    right_speed = direction * -4
+                # if direction == 0:
+                #     left_speed = -5
+                #     right_speed = -5
+                # else:
+                #     left_speed = direction * 4
+                #     right_speed = direction * -4
+
 
                 # Set the speed to motors
                 self.left_motor.setVelocity(left_speed)
@@ -50,3 +63,6 @@ class MyRobot1(RCJSoccerRobot):
 
                 # Send message to team robots
                 self.send_data_to_team(self.player_id)
+                print(ball_data["direction"])
+                print(direction)
+                print("angle : ", functions.get_angle(ball_data["direction"]))

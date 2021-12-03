@@ -9,8 +9,11 @@ import utils
 import functions
 
 
+
 class MyRobot1(RCJSoccerRobot):
     def run(self):
+        team_data = None
+
         while self.robot.step(TIME_STEP) != -1:
             if self.is_new_data():
                 data = self.get_new_data()
@@ -63,6 +66,10 @@ class MyRobot1(RCJSoccerRobot):
 
                 # Send message to team robots
                 self.send_data_to_team(self.player_id)
-                print(ball_data["direction"])
-                print(direction)
+                print("ball_data : {}".format(ball_data))
                 print("angle : ", functions.get_angle(ball_data["direction"]))
+                print("data : {}".format(data))
+                print("robot position : {}".format(robot_pos))
+                print("team data : {}".format(team_data))
+                print("heading : {}".format(heading))
+                print("---------------------------------")

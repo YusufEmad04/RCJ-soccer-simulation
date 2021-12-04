@@ -11,12 +11,12 @@ import functions
 
 class MyRobot1(RCJSoccerRobot):
     def run(self):
-        team_data = None
 
         while self.robot.step(TIME_STEP) != -1:
 
             # check if there is data from (supervisor receiver)
             if self.is_new_data():
+                team_data = []
 
                 # Get data from compass
                 heading = self.get_compass_heading()
@@ -31,7 +31,8 @@ class MyRobot1(RCJSoccerRobot):
                 # while loop to empty queue
                 while self.is_new_team_data():
                     # data from the team receiver (team receiver)
-                    team_data = self.get_new_team_data()
+                    team_data.append(self.get_new_team_data())
+                    team_data.append(self.get_new_team_data())
 
                 # check if there is data from (ball receiver)
                 if self.is_new_ball_data():

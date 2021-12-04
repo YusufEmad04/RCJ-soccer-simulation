@@ -18,6 +18,8 @@ class MyRobot2(RCJSoccerRobot):
                     team_data = self.get_new_team_data()
                     # Do something with team data
 
+                self.send_data_to_team(self.player_id)
+
                 if self.is_new_ball_data():
                     ball_data = self.get_new_ball_data()
                 else:
@@ -49,4 +51,4 @@ class MyRobot2(RCJSoccerRobot):
                 self.right_motor.setVelocity(right_speed)
 
                 # Send message to team robots
-                self.send_data_to_team(self.player_id)
+

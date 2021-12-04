@@ -16,13 +16,18 @@ class MyRobot1(RCJSoccerRobot):
 
         while self.robot.step(TIME_STEP) != -1:
             if self.is_new_data():
+
+                #data from the supervisor (supervisor receiver)
                 data = self.get_new_data()
 
                 while self.is_new_team_data():
+
+                    #data from the team receiver (team receiver)
                     team_data = self.get_new_team_data()
-                    # Do something with team data
 
                 if self.is_new_ball_data():
+
+                    #data from the ball receiver (ball receiver)
                     ball_data = self.get_new_ball_data()
                 else:
                     # If the robot does not see the ball, stop motors

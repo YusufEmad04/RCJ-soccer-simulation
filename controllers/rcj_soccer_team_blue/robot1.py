@@ -9,31 +9,14 @@ import utils
 import functions
 
 
-
 class MyRobot1(RCJSoccerRobot):
     def run(self):
         team_data = None
 
         while self.robot.step(TIME_STEP) != -1:
+
+            # check if there is data from (supervisor receiver)
             if self.is_new_data():
-
-                #data from the supervisor (supervisor receiver)
-                data = self.get_new_data()
-
-                while self.is_new_team_data():
-
-                    #data from the team receiver (team receiver)
-                    team_data = self.get_new_team_data()
-
-                if self.is_new_ball_data():
-
-                    #data from the ball receiver (ball receiver)
-                    ball_data = self.get_new_ball_data()
-                else:
-                    # If the robot does not see the ball, stop motors
-                    self.left_motor.setVelocity(0)
-                    self.right_motor.setVelocity(0)
-                    continue
 
                 # Get data from compass
                 heading = self.get_compass_heading()
@@ -41,40 +24,58 @@ class MyRobot1(RCJSoccerRobot):
                 # Get GPS coordinates of the robot
                 robot_pos = self.get_gps_coordinates()
 
-                # Compute the speed for motors
-                direction = utils.get_direction(ball_data['direction'])
-                ball_angle = functions.get_angle(ball_data["direction"])
+                # data from the supervisor (supervisor receiver)
+                data = self.get_new_data()
 
-                if ball_angle < 20 or ball_angle > 340:
-                    left_speed = -5
-                    right_speed = -5
-                elif ball_angle > 180:
-                    left_speed = 4
-                    right_speed = -4
+                # check if there is data from (team receiver)
+                # while loop to empty queue
+                while self.is_new_team_data():
+                    # data from the team receiver (team receiver)
+                    team_data = self.get_new_team_data()
+
+                # check if there is data from (ball receiver)
+                if self.is_new_ball_data():
+
+                    # data from the ball receiver (ball receiver)
+                    ball_data = self.get_new_ball_data()
+
+                    # Compute the speed for motors
+                    ball_angle = functions.get_angle(ball_data["direction"])
+
+                    if ball_angle < 20 or ball_angle > 340:
+                        left_speed = -5
+                        right_speed = -5
+                    elif ball_angle > 180:
+                        left_speed = 4
+                        right_speed = -4
+                    else:
+                        left_speed = -4
+                        right_speed = 4
+
+                    # Set the speed to motors
+                    self.left_motor.setVelocity(left_speed)
+                    self.right_motor.setVelocity(right_speed)
+
+                    # Send message to team robots and prints
+                    self.send_data_to_team(self.player_id)
+                    print("ball_data : {}".format(ball_data))
+                    print("angle : ", functions.get_angle(ball_data["direction"]))
+                    print("data : {}".format(data))
+                    print("robot position : {}".format(robot_pos))
+                    print("team data : {}".format(team_data))
+                    print("heading : {}".format(heading))
+                    print("---------------------------------")
+
+                # robot can't see the ball
                 else:
-                    left_speed = -4
-                    right_speed = 4
 
-                # If the robot has the ball right in front of it, go forward,
-                # rotate otherwise
-                # if direction == 0:
-                #     left_speed = -5
-                #     right_speed = -5
-                # else:
-                #     left_speed = direction * 4
-                #     right_speed = direction * -4
+                    # do something
+                    self.left_motor.setVelocity(-4)
+                    self.right_motor.setVelocity(-1)
 
-
-                # Set the speed to motors
-                self.left_motor.setVelocity(left_speed)
-                self.right_motor.setVelocity(right_speed)
-
-                # Send message to team robots
-                self.send_data_to_team(self.player_id)
-                print("ball_data : {}".format(ball_data))
-                print("angle : ", functions.get_angle(ball_data["direction"]))
-                print("data : {}".format(data))
-                print("robot position : {}".format(robot_pos))
-                print("team data : {}".format(team_data))
-                print("heading : {}".format(heading))
-                print("---------------------------------")
+                    self.send_data_to_team(self.player_id)
+                    print("data : {}".format(data))
+                    print("robot position : {}".format(robot_pos))
+                    print("team data : {}".format(team_data))
+                    print("heading : {}".format(heading))
+                    print("---------------------------------")

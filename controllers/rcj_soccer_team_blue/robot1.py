@@ -71,8 +71,8 @@ class MyRobot1(RCJSoccerRobot):
                 else:
 
                     # do something
-                    self.left_motor.setVelocity(-4)
-                    self.right_motor.setVelocity(-1)
+                    self.left_motor.setVelocity(-1)
+                    self.right_motor.setVelocity(-4)
 
                     self.send_data_to_team(self.player_id)
                     print("data : {}".format(data))

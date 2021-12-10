@@ -5,3 +5,11 @@ def get_angle(directions):
     FB = directions[2]
     angle = -math.atan2(LR, FB)*180/math.pi
     return angle if angle > 0 else 360 + angle
+
+
+def get_distance(r):
+    power = float(r) ** (-0.507)
+    return 1.0146 * power
+
+
+

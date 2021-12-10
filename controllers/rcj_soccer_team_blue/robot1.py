@@ -42,6 +42,7 @@ class MyRobot1(RCJSoccerRobot):
 
                     # Compute the speed for motors
                     ball_angle = functions.get_angle(ball_data["direction"])
+                    ball_distance = functions.get_distance(ball_data["strength"])
 
                     if ball_angle < 20 or ball_angle > 340:
                         left_speed = -5
@@ -60,7 +61,8 @@ class MyRobot1(RCJSoccerRobot):
                     # Send message to team robots and prints
                     self.send_data_to_team(self.player_id)
                     print("ball_data : {}".format(ball_data))
-                    print("angle : ", functions.get_angle(ball_data["direction"]))
+                    print("angle : ", ball_angle)
+                    print("distance : ", ball_distance)
                     print("data : {}".format(data))
                     print("robot position : {}".format(robot_pos))
                     print("team data : {}".format(team_data))

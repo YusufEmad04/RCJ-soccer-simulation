@@ -23,6 +23,8 @@ class MyRobot1(RCJSoccerRobot):
 
                 # Get GPS coordinates of the robot
                 robot_pos = self.get_gps_coordinates()
+                robot_pos[0] += 0.7
+                robot_pos[1] += 0.6
 
                 # data from the supervisor (supervisor receiver)
                 data = self.get_new_data()
@@ -41,13 +43,13 @@ class MyRobot1(RCJSoccerRobot):
                     ball_data = self.get_new_ball_data()
 
                     # Compute the speed for motors
-                    ball_angle = functions.get_angle(ball_data["direction"])
+                    robot_ball_angle = functions.get_angle(ball_data["direction"])
                     ball_distance = functions.get_distance(ball_data["strength"])
 
-                    if ball_angle < 20 or ball_angle > 340:
+                    if robot_ball_angle < 20 or robot_ball_angle > 340:
                         left_speed = -5
                         right_speed = -5
-                    elif ball_angle > 180:
+                    elif robot_ball_angle > 180:
                         left_speed = 4
                         right_speed = -4
                     else:
@@ -61,7 +63,7 @@ class MyRobot1(RCJSoccerRobot):
                     # Send message to team robots and prints
                     self.send_data_to_team(self.player_id)
                     print("ball_data : {}".format(ball_data))
-                    print("angle : ", ball_angle)
+                    print("angle : ", robot_ball_angle)
                     print("distance : ", ball_distance)
                     print("data : {}".format(data))
                     print("robot position : {}".format(robot_pos))
@@ -73,8 +75,8 @@ class MyRobot1(RCJSoccerRobot):
                 else:
 
                     # do something
-                    self.left_motor.setVelocity(-1)
-                    self.right_motor.setVelocity(-4)
+                    self.left_motor.setVelocity(0)
+                    self.right_motor.setVelocity(0)
 
                     self.send_data_to_team(self.player_id)
                     print("data : {}".format(data))

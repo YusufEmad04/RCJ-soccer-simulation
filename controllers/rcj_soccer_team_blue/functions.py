@@ -22,4 +22,4 @@ def get_ball_position(heading, ball_dist, ball_angle, robot_pos):
     ball_pos_x = robot_x + dist_x
     ball_pos_y = robot_y + dist_y
 
-    return (ball_pos_x - 0.7), (ball_pos_y - 0.6)
+    return ball_pos_x,ball_pos_y

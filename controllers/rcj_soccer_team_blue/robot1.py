@@ -23,9 +23,6 @@ class MyRobot1(RCJSoccerRobot):
 
                 # Get GPS coordinates of the robot
                 robot_pos = self.get_gps_coordinates()
-                # to remove negative coordinates
-                robot_pos[0] += 0.7
-                robot_pos[1] += 0.6
 
                 # data from the supervisor (supervisor receiver)
                 data = self.get_new_data()
@@ -47,15 +44,15 @@ class MyRobot1(RCJSoccerRobot):
                     ball_distance = functions.get_ball_distance(ball_data["strength"])
                     ball_pos = functions.get_ball_position(heading, ball_distance, robot_ball_angle, robot_pos)
 
-                    if robot_ball_angle < 20 or robot_ball_angle < -160:
+                    if -20 <= robot_ball_angle <= 20:
                         left_speed = -5
                         right_speed = -5
-                    elif robot_ball_angle < -180:
-                        left_speed = 4
-                        right_speed = -4
-                    else:
+                    elif 20 < robot_ball_angle <= 180:
                         left_speed = -4
                         right_speed = 4
+                    elif -20 > robot_ball_angle >= -180:
+                        left_speed = 4
+                        right_speed = -4
 
                     # Set the speed to motors
                     self.left_motor.setVelocity(left_speed)

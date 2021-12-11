@@ -166,15 +166,13 @@ class RCJSoccerRobot:
 
         # subtract math.pi/2 (90) so that the heading is 0 facing 'north'
         # (given x going from left to right)
-        rad = math.atan2(compass_values[0], compass_values[2]) - (math.pi / 2)
-        if rad < -math.pi:
-            rad = rad + (2 * math.pi)
+        rad = math.atan2(compass_values[0], compass_values[2])
 
         # This world is in NUE (not in EUN), so -1* has to be applied
         # More info about coordinate system at
         # https://cyberbotics.com/doc/reference/worldinfo
-        rad *= -1
-        return rad
+
+        return rad*180/math.pi
 
     def run(self):
         raise NotImplementedError

@@ -23,6 +23,7 @@ class MyRobot1(RCJSoccerRobot):
 
                 # Get GPS coordinates of the robot
                 robot_pos = self.get_gps_coordinates()
+                # to remove negative coordinates
                 robot_pos[0] += 0.7
                 robot_pos[1] += 0.6
 
@@ -42,14 +43,14 @@ class MyRobot1(RCJSoccerRobot):
                     # data from the ball receiver (ball receiver)
                     ball_data = self.get_new_ball_data()
 
-                    # Compute the speed for motors
                     robot_ball_angle = functions.get_angle(ball_data["direction"])
-                    ball_distance = functions.get_distance(ball_data["strength"])
+                    ball_distance = functions.get_ball_distance(ball_data["strength"])
+                    ball_pos = functions.get_ball_position(heading, ball_distance, robot_ball_angle, robot_pos)
 
-                    if robot_ball_angle < 20 or robot_ball_angle > 340:
+                    if robot_ball_angle < 20 or robot_ball_angle < -160:
                         left_speed = -5
                         right_speed = -5
-                    elif robot_ball_angle > 180:
+                    elif robot_ball_angle < -180:
                         left_speed = 4
                         right_speed = -4
                     else:
@@ -63,12 +64,13 @@ class MyRobot1(RCJSoccerRobot):
                     # Send message to team robots and prints
                     self.send_data_to_team(self.player_id)
                     print("ball_data : {}".format(ball_data))
-                    print("angle : ", robot_ball_angle)
-                    print("distance : ", ball_distance)
-                    print("data : {}".format(data))
+                    print("robot ball angle : ", robot_ball_angle)
+                    print("ball distance : ", ball_distance)
+                    print("supervisor data : {}".format(data))
                     print("robot position : {}".format(robot_pos))
                     print("team data : {}".format(team_data))
-                    print("heading : {}".format(heading))
+                    print("robot heading : {}".format(heading))
+                    print("ball position : {}".format(ball_pos))
                     print("---------------------------------")
 
                 # robot can't see the ball
@@ -79,7 +81,7 @@ class MyRobot1(RCJSoccerRobot):
                     self.right_motor.setVelocity(0)
 
                     self.send_data_to_team(self.player_id)
-                    print("data : {}".format(data))
+                    print("supervisor data : {}".format(data))
                     print("robot position : {}".format(robot_pos))
                     print("team data : {}".format(team_data))
                     print("heading : {}".format(heading))

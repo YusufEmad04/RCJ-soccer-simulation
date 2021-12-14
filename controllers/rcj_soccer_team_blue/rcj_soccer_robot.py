@@ -82,11 +82,20 @@ class RCJSoccerRobot:
         Returns:
             dict: Parsed message stored in dictionary.
         """
-        struct_fmt = 'i'
+        struct_fmt = 'iffff?'
         unpacked = struct.unpack(struct_fmt, packet)
+
         data = {
             'robot_id': unpacked[0],
+            'robot_pos': [unpacked[1], unpacked[2]],
+            'ball_pos': [unpacked[3], unpacked[4]],
+            'see the ball': unpacked[5]
+
         }
+
+        if round(unpacked[3],0) == -2:
+            data["ball_pos"] = None
+
         return data
 
     def get_new_team_data(self) -> dict:
@@ -107,14 +116,14 @@ class RCJSoccerRobot:
         """
         return self.team_receiver.getQueueLength() > 0
 
-    def send_data_to_team(self, robot_id) -> None:
+    def send_data_to_team(self, robot_id, robot_pos, ball_pos, see_ball) -> None:
         """Send data to the team
 
         Args:
              robot_id (int): ID of the robot
         """
-        struct_fmt = 'i'
-        data = [robot_id]
+        struct_fmt = 'iffff?'
+        data = [robot_id,*robot_pos,*ball_pos,see_ball]
         packet = struct.pack(struct_fmt, *data)
         self.team_emitter.send(packet)
 

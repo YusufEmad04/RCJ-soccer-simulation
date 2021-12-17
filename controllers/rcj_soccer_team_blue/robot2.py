@@ -32,8 +32,9 @@ class MyRobot2(RCJSoccerRobot):
                     # data from the team receiver (team receiver)
                     team_data.append(self.get_new_team_data())
                     team_data.append(self.get_new_team_data())
+                
                 Funtions2.get_g_angle(robot_pos,heading,[0,0])
-                print(" ")
+
                 # check if there is data from (ball receiver)
                 if self.is_new_ball_data():
 

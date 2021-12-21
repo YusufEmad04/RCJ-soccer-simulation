@@ -63,17 +63,17 @@ class MyRobot1(RCJSoccerRobot):
 
                     # Send message to team robots and prints
                     self.send_data_to_team(self.player_id,robot_pos,ball_pos,True)
-                    print("ball_data : {}".format(ball_data))
-                    print("robot ball angle : ", robot_ball_angle)
-                    print("ball distance : ", ball_distance)
-                    print("supervisor data : {}".format(data))
-                    print("robot position : {}".format(robot_pos))
-                    print("team data : ")
-                    print(team_data[0])
-                    print(team_data[1])
-                    print("robot heading : {}".format(heading))
-                    print("ball position : {}".format(ball_pos))
-                    print("---------------------------------")
+                    # print("ball_data : {}".format(ball_data))
+                    # print("robot ball angle : ", robot_ball_angle)
+                    # print("ball distance : ", ball_distance)
+                    # print("supervisor data : {}".format(data))
+                    # print("robot position : {}".format(robot_pos))
+                    # print("team data : ")
+                    # print(team_data[0])
+                    # print(team_data[1])
+                    # print("robot heading : {}".format(heading))
+                    # print("ball position : {}".format(ball_pos))
+                    # print("---------------------------------")
 
                 # robot can't see the ball
                 else:
@@ -83,8 +83,8 @@ class MyRobot1(RCJSoccerRobot):
                     self.right_motor.setVelocity(0)
 
                     self.send_data_to_team(self.player_id,robot_pos,[-2,-2],False)
-                    print("supervisor data : {}".format(data))
-                    print("robot position : {}".format(robot_pos))
-                    print("team data : {}".format(team_data))
-                    print("heading : {}".format(heading))
-                    print("---------------------------------")
+                    # print("supervisor data : {}".format(data))
+                    # print("robot position : {}".format(robot_pos))
+                    # print("team data : {}".format(team_data))
+                    # print("heading : {}".format(heading))
+                    # print("---------------------------------")

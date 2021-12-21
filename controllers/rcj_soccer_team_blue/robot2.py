@@ -33,7 +33,7 @@ class MyRobot2(RCJSoccerRobot):
                     team_data.append(self.get_new_team_data())
                     team_data.append(self.get_new_team_data())
                 
-                Funtions2.get_g_angle(robot_pos,heading,[0,0])
+                print(Funtions2.get_g_angle(robot_pos,heading,[0,0]))
 
                 # check if there is data from (ball receiver)
                 if self.is_new_ball_data():
@@ -58,8 +58,8 @@ class MyRobot2(RCJSoccerRobot):
                     #     right_speed = -4
                     #
                     # # Set the speed to motors
-                    # self.left_motor.setVelocity(left_speed)
-                    # self.right_motor.setVelocity(right_speed)
+                    self.left_motor.setVelocity(-2)
+                    self.right_motor.setVelocity(2)
 
                     # Send message to team robots and prints
                     self.send_data_to_team(self.player_id, robot_pos, ball_pos, True)
@@ -68,8 +68,8 @@ class MyRobot2(RCJSoccerRobot):
                 else:
 
                     # do something
-                    self.left_motor.setVelocity(0)
-                    self.right_motor.setVelocity(0)
+                    self.left_motor.setVelocity(-2)
+                    self.right_motor.setVelocity(2)
 
                     self.send_data_to_team(self.player_id, robot_pos, [-2, -2], False)
 

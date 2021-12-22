@@ -1,7 +1,7 @@
 import math
 
 
-def get_g_angle(robot_pos, heading, coord):
+def get_coord_angle(robot_pos, heading, coord):
     # x = coord[0]
     # y = coord[1]
     # robot_angle: float = math.radians(orientation)
@@ -31,6 +31,9 @@ def get_g_angle(robot_pos, heading, coord):
     # return final_angle
     x = robot_pos[0] - coord[0]
     y = robot_pos[1] - coord[1]
+
+    if x == 0:
+        x = 0.00000000001
 
     a = (math.atan(y / x)*180/math.pi) #getting tan value
 

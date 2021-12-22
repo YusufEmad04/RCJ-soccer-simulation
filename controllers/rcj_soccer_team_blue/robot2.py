@@ -3,7 +3,7 @@
 # Feel free to import built-in libraries
 import math
 import functions
-import Funtions2
+import funtions2
 # You can also import scripts that you put into the folder with controller
 from rcj_soccer_robot import RCJSoccerRobot, TIME_STEP
 import utils
@@ -33,7 +33,7 @@ class MyRobot2(RCJSoccerRobot):
                     team_data.append(self.get_new_team_data())
                     team_data.append(self.get_new_team_data())
                 
-                print(Funtions2.get_g_angle(robot_pos,heading,[0,0]))
+                print(funtions2.get_g_angle(robot_pos,heading,[0,0]))
 
                 # check if there is data from (ball receiver)
                 if self.is_new_ball_data():

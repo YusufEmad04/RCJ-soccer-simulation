@@ -46,8 +46,8 @@ class MyRobot2(RCJSoccerRobot):
                         right_speed = direction * -4
 
                     # Set the speed to motors
-                    self.left_motor.setVelocity(left_speed)
-                    self.right_motor.setVelocity(right_speed)
+                    self.left_motor.setVelocity(0.1)
+                    self.right_motor.setVelocity(0.1)
 
                     # Send message to team robots
                     self.send_data_to_team(self.player_id)

@@ -89,7 +89,7 @@ def move(direction, quad):
 
 
 def move_pos(robot_pos, orientation, coord):
-    angle, quad = get_g_angle(robot_pos, orientation, coord)
+    angle, quad = get_coord_angle(robot_pos, orientation, coord)
     dir = get_direction(angle)
     speeds = move(dir, quad)
     return speeds

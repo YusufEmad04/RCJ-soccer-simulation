@@ -96,12 +96,19 @@ def receive_data(robot: RCJSoccerRobot):
     return d
 
 
-def print_data(data):
-    # dict data with their keys
-    for key in data.keys():
-        print("{}:  {}".format(key, data[key]))
+def print_data(data,k):
 
-    print("\n--------------------\n")
+    if k == None:
+
+
+
+        # dict data with their keys
+        for key in data.keys():
+            print("{}:  {}".format(key, data[key]))
+
+        print("\n--------------------\n")
+    else:
+        print(data[k])
 
 
 def receive_ball_data(robot: RCJSoccerRobot, heading, robot_pos):

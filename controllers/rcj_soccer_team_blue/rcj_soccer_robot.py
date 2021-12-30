@@ -38,6 +38,11 @@ class RCJSoccerRobot:
         self.left_motor.setVelocity(0.0)
         self.right_motor.setVelocity(0.0)
 
+        self.time_step = 0
+        self.ball_pos_arr = []
+        self.robot_pos_arr = []
+        self.time_steps_arr = []
+
     def parse_supervisor_msg(self, packet: str) -> dict:
         """Parse message received from supervisor
 

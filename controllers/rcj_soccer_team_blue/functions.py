@@ -68,6 +68,8 @@ def receive_data(robot: RCJSoccerRobot):
     # Get GPS coordinates of the robot
     robot_pos = robot.get_gps_coordinates()
 
+    add_to_arr(robot.robot_pos_arr, robot_pos)
+
     # data from the supervisor (supervisor receiver)
     data = robot.get_new_data()
 
@@ -88,27 +90,26 @@ def receive_data(robot: RCJSoccerRobot):
         "heading": heading,
         "robot position": robot_pos,
         "supervisor data": data,
-        "B1": r[0],
-        "B2": r[1],
-        "B3": r[2]
+        "team data": {
+            "B1": r[0],
+            "B2": r[1],
+            "B3": r[2]
+        }
+
     }
 
     return d
 
 
-def print_data(data,k):
-
-    if k == None:
-
-
-
+def print_data(data, k=None):
+    if k:
+        print(data[k])
+    else:
         # dict data with their keys
         for key in data.keys():
             print("{}:  {}".format(key, data[key]))
 
         print("\n--------------------\n")
-    else:
-        print(data[k])
 
 
 def receive_ball_data(robot: RCJSoccerRobot, heading, robot_pos):
@@ -118,6 +119,8 @@ def receive_ball_data(robot: RCJSoccerRobot, heading, robot_pos):
     robot_ball_angle = get_ball_angle(ball_data["direction"])
     ball_distance = get_ball_distance(ball_data["strength"])
     ball_pos = get_ball_position(heading, ball_distance, robot_ball_angle, robot_pos)
+
+    add_to_arr(robot.ball_pos_arr, ball_pos)
 
     d = {
         "robot ball angle": robot_ball_angle,
@@ -160,3 +163,59 @@ def move_to_point(robot: RCJSoccerRobot, robot_pos, heading, coord):
         # set each wheel's speed (right is at maximum, left is according to ratio)
         robot.left_motor.setVelocity((-10) * ratio)
         robot.right_motor.setVelocity(-10)
+
+
+def add_to_arr(arr, data):
+    arr.append(data)
+    if len(arr) >= 4:
+        arr.pop(0)
+
+
+def get_speed(t, pos):
+    y = (pos[-1][1] - pos[0][1]) ** 2
+    x = (pos[-1][0] - pos[0][0]) ** 2
+    dist = math.sqrt(y + x)
+    time = t[-1] - t[0]
+    if time == 0:
+        return 0
+
+    return 100 * dist / time
+
+
+def get_robot_speed(robot: RCJSoccerRobot):
+    return get_speed(robot.time_steps_arr, robot.robot_pos_arr)
+
+
+def increment_step(robot: RCJSoccerRobot):
+    robot.time_step += 0.5
+    add_to_arr(robot.time_steps_arr, robot.time_step)
+
+
+def clear_ball_data(robot: RCJSoccerRobot):
+    robot.ball_pos_arr = []
+
+
+def get_ball_speed(robot: RCJSoccerRobot, this_robot, team_ball_data=None):
+
+    # check if ball position came from this robot
+    if this_robot:
+        return get_speed(robot.time_steps_arr, robot.ball_pos_arr)
+    else:
+        ball_pos = []
+
+        # getting ball position from other robots
+        for robot_id in team_ball_data:
+            if team_ball_data[robot_id]:
+                if team_ball_data[robot_id]["see the ball"]:
+                    ball_pos.append(team_ball_data[robot_id]["ball_pos"])
+
+        # checking if other robots see the ball
+        if ball_pos:
+            add_to_arr(robot.ball_pos_arr, ball_pos[0])
+            return get_speed(robot.time_steps_arr, robot.ball_pos_arr)
+
+        # clearing ball positions array (speed won't be correct)
+        else:
+            clear_ball_data(robot)
+            return None
+

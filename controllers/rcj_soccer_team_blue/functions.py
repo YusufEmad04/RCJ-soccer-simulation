@@ -73,6 +73,9 @@ def receive_data(robot: RCJSoccerRobot):
     # data from the supervisor (supervisor receiver)
     data = robot.get_new_data()
 
+    # get ultrasonic values
+    ultrasonic = robot.get_sonar_values()
+
     # check if there is data from (team receiver)
     # while loop to empty queue
     while robot.is_new_team_data():
@@ -90,6 +93,12 @@ def receive_data(robot: RCJSoccerRobot):
         "heading": heading,
         "robot position": robot_pos,
         "supervisor data": data,
+        "ultrasonic": {
+            "front": ultrasonic["front"],
+            "back": ultrasonic["back"],
+            "right": ultrasonic["right"],
+            "left": ultrasonic["left"],
+        },
         "team data": {
             "B1": r[0],
             "B2": r[1],

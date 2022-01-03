@@ -1,9 +1,7 @@
 import json
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
-
-from referee.consts import GameEvents
 
 
 class EventHandler:
@@ -12,15 +10,14 @@ class EventHandler:
 
     def handle(
         self,
-        supervisor,  # Supervisor from supervisor.py
+        referee,  # Referee from referee.py
         type: str,
         payload: Optional[dict] = None,
     ):
         """Handle the incoming event
 
         Args:
-            supervisor (Supervisor): Instance of Referee, which is in turn
-                instance of supervisor
+            referee (RCJSoccerReferee): Instance of Referee
             type (str): Event type
             payload (dict, optional): More information about the event
         """
@@ -34,20 +31,20 @@ class JSONLoggerHandler(EventHandler):
         super().__init__()
         self.logfile = logfile
 
-    def handle(self, supervisor, type: str, payload: Optional[dict] = None):
-        matchtime = supervisor.match_time - supervisor.time
+    def handle(self, referee, type: str, payload: Optional[dict] = None):
+        matchtime = referee.match_time - referee.time
         data = {
-            "datetime": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+            "datetime": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "matchtime": matchtime,
             "event": type,
         }
 
         if payload is not None:
-            data['payload'] = payload
+            data["payload"] = payload
 
-        with self.logfile.open('a') as outfile:
+        with self.logfile.open("a") as outfile:
             json.dump(data, outfile)
-            outfile.write('\n')
+            outfile.write("\n")
 
 
 class DrawMessageHandler(EventHandler):
@@ -82,9 +79,9 @@ class DrawMessageHandler(EventHandler):
     def create_match_finish_msg(self, total_match_time: int, **kwargs) -> str:
         return f"The match time {total_match_time}s is over."
 
-    def handle(self, supervisor, type: str, payload: Optional[dict] = None):
+    def handle(self, referee, type: str, payload: Optional[dict] = None):
         # Call formatter based on event type.
         msg_formatter = getattr(self, f"create_{type.lower()}_msg")
         data = payload if payload is not None else {}
         message = msg_formatter(**data)
-        supervisor.add_event_message_to_queue(message)
+        referee.add_event_message_to_queue(message)

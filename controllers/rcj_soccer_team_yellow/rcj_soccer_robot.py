@@ -29,11 +29,20 @@ class RCJSoccerRobot:
         self.compass = self.robot.getDevice("compass")
         self.compass.enable(TIME_STEP)
 
+        self.sonar_left = self.robot.getDevice("distancesensor left")
+        self.sonar_left.enable(TIME_STEP)
+        self.sonar_right = self.robot.getDevice("distancesensor right")
+        self.sonar_right.enable(TIME_STEP)
+        self.sonar_front = self.robot.getDevice("distancesensor front")
+        self.sonar_front.enable(TIME_STEP)
+        self.sonar_back = self.robot.getDevice("distancesensor back")
+        self.sonar_back.enable(TIME_STEP)
+
         self.left_motor = self.robot.getDevice("left wheel motor")
         self.right_motor = self.robot.getDevice("right wheel motor")
 
-        self.left_motor.setPosition(float('+inf'))
-        self.right_motor.setPosition(float('+inf'))
+        self.left_motor.setPosition(float("+inf"))
+        self.right_motor.setPosition(float("+inf"))
 
         self.left_motor.setVelocity(0.0)
         self.right_motor.setVelocity(0.0)
@@ -49,12 +58,10 @@ class RCJSoccerRobot:
                 }
         """
         # True/False telling whether the goal was scored
-        struct_fmt = '?'
+        struct_fmt = "?"
         unpacked = struct.unpack(struct_fmt, packet)
 
-        data = {
-            "waiting_for_kickoff": unpacked[0]
-        }
+        data = {"waiting_for_kickoff": unpacked[0]}
         return data
 
     def get_new_data(self) -> dict:
@@ -81,10 +88,10 @@ class RCJSoccerRobot:
         Returns:
             dict: Parsed message stored in dictionary.
         """
-        struct_fmt = 'i'
+        struct_fmt = "i"
         unpacked = struct.unpack(struct_fmt, packet)
         data = {
-            'robot_id': unpacked[0],
+            "robot_id": unpacked[0],
         }
         return data
 
@@ -112,7 +119,7 @@ class RCJSoccerRobot:
         Args:
              robot_id (int): ID of the robot
         """
-        struct_fmt = 'i'
+        struct_fmt = "i"
         data = [robot_id]
         packet = struct.pack(struct_fmt, *data)
         self.team_emitter.send(packet)
@@ -132,8 +139,8 @@ class RCJSoccerRobot:
         """
         _ = self.ball_receiver.getData()
         data = {
-            'direction': self.ball_receiver.getEmitterDirection(),
-            'strength': self.ball_receiver.getSignalStrength(),
+            "direction": self.ball_receiver.getEmitterDirection(),
+            "strength": self.ball_receiver.getSignalStrength(),
         }
         self.ball_receiver.nextPacket()
         return data
@@ -146,7 +153,7 @@ class RCJSoccerRobot:
         """
         return self.ball_receiver.getQueueLength() > 0
 
-    def get_gps_coordinates(self):
+    def get_gps_coordinates(self) -> list:
         """Get new GPS coordinates
 
         Returns:
@@ -155,7 +162,7 @@ class RCJSoccerRobot:
         gps_values = self.gps.getValues()
         return [gps_values[0], gps_values[2]]
 
-    def get_compass_heading(self):
+    def get_compass_heading(self) -> float:
         """Get compass heading in radians
 
         Returns:
@@ -174,6 +181,19 @@ class RCJSoccerRobot:
         # https://cyberbotics.com/doc/reference/worldinfo
         rad *= -1
         return rad
+
+    def get_sonar_values(self) -> dict:
+        """Get new values from sonars.
+
+        Returns:
+            dict: Value for each sonar.
+        """
+        return {
+            "left": self.sonar_left.getValue(),
+            "right": self.sonar_right.getValue(),
+            "front": self.sonar_front.getValue(),
+            "back": self.sonar_back.getValue(),
+        }
 
     def run(self):
         raise NotImplementedError

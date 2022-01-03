@@ -1,18 +1,19 @@
 import logging
 import os
-from math import ceil
 from datetime import datetime
+from math import ceil
 from pathlib import Path, PosixPath
 
-from referee.consts import DEFAULT_MATCH_TIME, TIME_STEP
-from referee.event_handlers import JSONLoggerHandler, DrawMessageHandler
-from referee.referee import RCJSoccerReferee
+from recorder.consts import RecordingFormat
 from recorder.recorder import (
     BaseVideoRecordAssistant,
     MP4VideoRecordAssistant,
     X3DVideoRecordAssistant,
 )
-from recorder.consts import RecordingFormat
+from referee.consts import DEFAULT_MATCH_TIME, TIME_STEP
+from referee.event_handlers import DrawMessageHandler, JSONLoggerHandler
+from referee.referee import RCJSoccerReferee
+from referee.supervisor import RCJSoccerSupervisor
 
 
 def get_video_recorder_class(rec_format: str) -> BaseVideoRecordAssistant:
@@ -30,15 +31,15 @@ def output_path(
     half_id: int,
 ) -> PosixPath:
 
-    now_str = datetime.utcnow().strftime('%Y%m%dT%H%M%S')
-    team_blue = team_blue_id.replace(' ', '_')
-    team_yellow = team_yellow_id.replace(' ', '_')
+    now_str = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
+    team_blue = team_blue_id.replace(" ", "_")
+    team_yellow = team_yellow_id.replace(" ", "_")
 
     # Ensure the directory exists
     if not directory.exists():
         directory.mkdir(parents=True, exist_ok=True)
 
-    name = f'{match_id}_-_{half_id}_-_{team_blue}_vs_{team_yellow}-{now_str}'
+    name = f"{match_id}_-_{half_id}_-_{team_blue}_vs_{team_yellow}-{now_str}"
     filename = Path(name)
     return directory / filename
 
@@ -62,7 +63,7 @@ MATCH_TIME = int(os.environ.get("RCJ_SIM_MATCH_TIME", DEFAULT_MATCH_TIME))
 
 automatic_mode = True if "RCJ_SIM_AUTO_MODE" in os.environ.keys() else False
 
-REFLOG_OUTPUT_PATH = os.environ.get("RCJ_SIM_OUTPUT_PATH", 'reflog')
+REFLOG_OUTPUT_PATH = os.environ.get("RCJ_SIM_OUTPUT_PATH", "reflog")
 directory = Path(REFLOG_OUTPUT_PATH)
 output_prefix = output_path(
     directory,
@@ -71,13 +72,15 @@ output_prefix = output_path(
     MATCH_ID,
     HALF_ID,
 )
-reflog_path = output_prefix.with_suffix('.jsonl')
+reflog_path = output_prefix.with_suffix(".jsonl")
 
+supervisor = RCJSoccerSupervisor()
 referee = RCJSoccerReferee(
+    supervisor=supervisor,
     match_time=MATCH_TIME,
-    progress_check_steps=ceil(15/(TIME_STEP/1000.0)),
+    progress_check_steps=ceil(15 / (TIME_STEP / 1000.0)),
     progress_check_threshold=0.5,
-    ball_progress_check_steps=ceil(10/(TIME_STEP/1000.0)),
+    ball_progress_check_steps=ceil(10 / (TIME_STEP / 1000.0)),
     ball_progress_check_threshold=0.5,
     team_name_blue=TEAM_BLUE,
     team_name_yellow=TEAM_YELLOW,
@@ -86,7 +89,7 @@ referee = RCJSoccerReferee(
     penalty_area_allowed_time=15,
     penalty_area_reset_after=2,
     match_id=MATCH_ID,
-    half_id=HALF_ID
+    half_id=HALF_ID,
 )
 
 recorders = []
@@ -100,14 +103,14 @@ for rec_format in REC_FORMATS:
 
     recorders.append(
         recorder_class(
-            supervisor=referee,
+            supervisor=supervisor,
             output_path=str(output_prefix.with_suffix(f".{rec_suffix}")),
             resolution="720p",
         )
     )
 
 if automatic_mode:
-    referee.simulationSetMode(referee.SIMULATION_MODE_FAST)
+    supervisor.simulationSetMode(supervisor.SIMULATION_MODE_FAST)
     for recorder in recorders:
         recorder.start_recording()
 
@@ -117,23 +120,20 @@ referee.add_event_subscriber(DrawMessageHandler())
 referee.kickoff()
 
 # The "event" loop for the referee
-while referee.step(TIME_STEP) != -1:
-    referee.update_positions()
-    referee.emit_data()
-
+while supervisor.step(TIME_STEP) != -1:
     # If the tick does not return True, the match has ended and the event loop
     # can stop
     if not referee.tick():
         break
 
 # When end of match, pause simulator immediately
-referee.simulationSetMode(referee.SIMULATION_MODE_PAUSE)
+supervisor.simulationSetMode(supervisor.SIMULATION_MODE_PAUSE)
 
 for recorder in recorders:
     if recorder.is_recording():
         recorder.stop_recording()
-        logging.info(f'Processing {recorder.output_suffix} video...')
+        logging.info(f"Processing {recorder.output_suffix} video...")
         recorder.wait_processing()
 
 if automatic_mode:
-    referee.simulationQuit(0)
+    supervisor.simulationQuit(0)

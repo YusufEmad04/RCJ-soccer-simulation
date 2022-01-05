@@ -16,12 +16,12 @@ def get_ball_distance(r):
     return 1.0146 * power
 
 
-def get_ball_position(heading, ball_dist, ball_angle, robot_pos):
+def get_coord_position(heading, coord_dist, coord_angle, robot_pos):
     robot_x = robot_pos[0]
     robot_y = robot_pos[1]
 
-    dist_x = ball_dist * math.cos((heading + ball_angle) * math.pi / 180)  # getting x-axis distance from robot to ball
-    dist_y = ball_dist * math.sin((heading + ball_angle) * math.pi / 180)  # getting y-axis distance from robot to ball
+    dist_x = coord_dist * math.cos((heading + coord_angle) * math.pi / 180)  # getting x-axis distance from robot to ball
+    dist_y = coord_dist * math.sin((heading + coord_angle) * math.pi / 180)  # getting y-axis distance from robot to ball
     ball_pos_x = robot_x + dist_x  # getting x-axis coordinates of ball
     ball_pos_y = robot_y + dist_y  # getting x-axis coordinates of ball
 
@@ -76,6 +76,12 @@ def receive_data(robot: RCJSoccerRobot):
     # get ultrasonic values
     ultrasonic = robot.get_sonar_values()
 
+    # get coordinates of readings
+    ultrasonic_front = get_coord_position(heading, get_ultrasonic_dist(ultrasonic["front"]), 0, robot_pos)
+    ultrasonic_back = get_coord_position(heading, get_ultrasonic_dist(ultrasonic["back"]), 180, robot_pos)
+    ultrasonic_right = get_coord_position(heading, get_ultrasonic_dist(ultrasonic["right"]), 90, robot_pos)
+    ultrasonic_left = get_coord_position(heading, get_ultrasonic_dist(ultrasonic["left"]), -90, robot_pos)
+
     # check if there is data from (team receiver)
     # while loop to empty queue
     while robot.is_new_team_data():
@@ -94,10 +100,10 @@ def receive_data(robot: RCJSoccerRobot):
         "robot position": robot_pos,
         "supervisor data": data,
         "ultrasonic": {
-            "front": ultrasonic["front"],
-            "back": ultrasonic["back"],
-            "right": ultrasonic["right"],
-            "left": ultrasonic["left"],
+            "front": (robot_pos[0] + ultrasonic_front[0], robot_pos[1] + ultrasonic_front[1]),
+            "back": (robot_pos[0] + ultrasonic_back[0], robot_pos[1] + ultrasonic_back[1]),
+            "right": (robot_pos[0] + ultrasonic_right[0], robot_pos[1] + ultrasonic_right[1]),
+            "left": (robot_pos[0] + ultrasonic_left[0], robot_pos[1] + ultrasonic_left[1]),
         },
         "team data": {
             "B1": r[0],
@@ -127,7 +133,7 @@ def receive_ball_data(robot: RCJSoccerRobot, heading, robot_pos):
     # getting all ball data
     robot_ball_angle = get_ball_angle(ball_data["direction"])
     ball_distance = get_ball_distance(ball_data["strength"])
-    ball_pos = get_ball_position(heading, ball_distance, robot_ball_angle, robot_pos)
+    ball_pos = get_coord_position(heading, ball_distance, robot_ball_angle, robot_pos)
 
     add_to_arr(robot.ball_pos_arr, ball_pos)
 
@@ -205,7 +211,6 @@ def clear_ball_data(robot: RCJSoccerRobot):
 
 
 def get_ball_speed(robot: RCJSoccerRobot, this_robot, team_ball_data=None):
-
     # check if ball position came from this robot
     if this_robot:
         return get_speed(robot.time_steps_arr, robot.ball_pos_arr)
@@ -228,3 +233,6 @@ def get_ball_speed(robot: RCJSoccerRobot, this_robot, team_ball_data=None):
             clear_ball_data(robot)
             return None
 
+
+def get_ultrasonic_dist(r):
+    return (0.001 * r) - 0.0118

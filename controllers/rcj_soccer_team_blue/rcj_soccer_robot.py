@@ -1,5 +1,6 @@
 import math
 import struct
+import time
 
 TIME_STEP = 64
 ROBOT_NAMES = ["B1", "B2", "B3", "Y1", "Y2", "Y3"]
@@ -47,10 +48,22 @@ class RCJSoccerRobot:
         self.left_motor.setVelocity(0.0)
         self.right_motor.setVelocity(0.0)
 
+        self.heading = 0
+        self.ultrasonic_data = dict()
+        self.team_data = dict()
+
         self.time_step = 0
         self.ball_pos_arr = []
         self.robot_pos_arr = []
         self.time_steps_arr = []
+
+        self.moving_to_x = False
+        self.moving_to_y = False
+        self.moving_to_z = True
+        self.moving_forward = False
+        self.moving_backward = False
+
+        self.start_time = time.time()
 
     def parse_supervisor_msg(self, packet: str) -> dict:
         """Parse message received from supervisor

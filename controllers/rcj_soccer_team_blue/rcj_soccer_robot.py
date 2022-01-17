@@ -62,6 +62,10 @@ class RCJSoccerRobot:
         self.moving_to_z = True
         self.moving_forward = False
         self.moving_backward = False
+        self.intercepting_ball = [False, 0]
+        self.strategy_4_data = {"forward": True, "function": 1}
+        self.ball_intercept_pos = None
+        self.ball_intercept_direction = 0
 
         self.start_time = time.time()
 
@@ -188,9 +192,9 @@ class RCJSoccerRobot:
             List containing x and y values
         """
         gps_values = self.gps.getValues()
-        return [gps_values[0], gps_values[2]]
+        return [gps_values[1], gps_values[0]]
 
-    def get_compass_heading(self):
+    def get_compass_heading(self) -> float:
         """Get compass heading in radians
 
         Returns:
@@ -198,15 +202,19 @@ class RCJSoccerRobot:
         """
         compass_values = self.compass.getValues()
 
-        # subtract math.pi/2 (90) so that the heading is 0 facing 'north'
-        # (given x going from left to right)
-        rad = math.atan2(compass_values[0], compass_values[2])
+        # Add math.pi/2 (90) so that the heading 0 is facing opponent's goal
+        rad = math.atan2(compass_values[0], compass_values[1]) + (math.pi / 2)
+        if rad < -math.pi:
+            rad = rad + (2 * math.pi)
 
-        # This world is in NUE (not in EUN), so -1* has to be applied
-        # More info about coordinate system at
-        # https://cyberbotics.com/doc/reference/worldinfo
+        rad = rad * 180 / math.pi * -1
 
-        return rad * 180 / math.pi
+        if rad > 0:
+            rad -= 180
+        else:
+            rad += 180
+
+        return rad
 
     def get_sonar_values(self) -> dict:
         """Get new values from sonars.

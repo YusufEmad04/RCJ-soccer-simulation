@@ -15,6 +15,5 @@ jobs:
         with:
           python-version: 3.8
       - run: pip install -r requirements/development.txt
-      - run: isort --check-only .
       - run: black --check .
       - run: flake8 .

@@ -1,6 +1,6 @@
 import math
-import time
 from rcj_soccer_robot import RCJSoccerRobot
+import time
 
 
 def get_ball_angle(directions):

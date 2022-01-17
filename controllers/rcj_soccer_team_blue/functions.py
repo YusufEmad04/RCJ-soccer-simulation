@@ -1,5 +1,5 @@
-import math
 from rcj_soccer_robot import RCJSoccerRobot
+import math
 import time
 
 

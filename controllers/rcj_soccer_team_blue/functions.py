@@ -521,8 +521,8 @@ def defend_strategy_2(robot: RCJSoccerRobot, was_intercepting=True):
 
         # check if robot arrived to intercept position
 
-        if (pos[0] - 0.035 <= robot.robot_pos_arr[-1][0] <= pos[0] + 0.035) and (
-                pos[1] - 0.035 <= robot.robot_pos_arr[-1][1] <= pos[1] + 0.035):
+        if (pos[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= pos[0] + 0.025) and (
+                pos[1] - 0.025 <= robot.robot_pos_arr[-1][1] <= pos[1] + 0.025):
             print("\n__stop\n")
             robot.right_motor.setVelocity(0)
             robot.left_motor.setVelocity(0)
@@ -643,8 +643,8 @@ def defend_strategy_4(robot: RCJSoccerRobot, was_intercepting=True):
     else:
 
         def arrived(point):
-            if (point[0] - 0.035 <= robot.robot_pos_arr[-1][0] <= point[0] + 0.035) and (
-                    point[1] - 0.035 <= robot.robot_pos_arr[-1][1] <= point[1] + 0.035):
+            if (point[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= point[0] + 0.025) and (
+                    point[1] - 0.025 <= robot.robot_pos_arr[-1][1] <= point[1] + 0.025):
                 return True
 
         if arrived(robot.ball_intercept_pos):
@@ -706,8 +706,8 @@ def defend_strategy_5(robot: RCJSoccerRobot, predicted_pos=None, was_interceptin
         print("\ncanceled {}\n".format(get_ball_speed(robot)[1]))
 
     def arrived(point):
-        if (point[0] - 0.035 <= robot.robot_pos_arr[-1][0] <= point[0] + 0.035) and (
-                point[1] - 0.035 <= robot.robot_pos_arr[-1][1] <= point[1] + 0.035):
+        if (point[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= point[0] + 0.025) and (
+                point[1] - 0.025 <= robot.robot_pos_arr[-1][1] <= point[1] + 0.025):
             return True
 
     if arrived(robot.ball_intercept_pos):

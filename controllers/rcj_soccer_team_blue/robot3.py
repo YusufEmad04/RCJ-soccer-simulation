@@ -19,20 +19,13 @@ class MyRobot3(RCJSoccerRobot):
                 # receive and print data (team + supervisor)
                 data = receive_data(self)
 
-                # get robot speed
-                robot_speed = get_robot_speed(self)
-
                 # check if there is data from (ball receiver)
                 if self.is_new_ball_data():
 
                     # data from the ball receiver (ball receiver)
-                    ball_data = receive_ball_data(self, data["heading"], data["robot position"])
+                    ball_data = receive_ball_data(self)
 
-                    # get ball speed
-                    ball_speed = get_ball_speed(self, True)
-
-                    # move towards the ball
-                    move_to_point(self, data["robot position"], data["heading"], ball_data["ball position"])
+                    move_to_point(self, ball_data["ball position"])
 
                     # Send message to team robots and prints
                     self.send_data_to_team(self.player_id, data["robot position"], ball_data["ball position"], True)
@@ -40,10 +33,9 @@ class MyRobot3(RCJSoccerRobot):
                 # robot can't see the ball
                 else:
 
-                    # get ball speed from other robots
-                    ball_speed = get_ball_speed(self, False, data["team data"])
+                    get_team_ball_data(self)
 
                     # robot moves to origin
-                    move_to_point(self, data["robot position"], data["heading"], [0, 0])
+                    move_to_point(self, [0, 0])
 
                     self.send_data_to_team(self.player_id, data["robot position"], [-2, -2], False)

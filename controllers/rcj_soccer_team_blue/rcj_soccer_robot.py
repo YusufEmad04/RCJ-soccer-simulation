@@ -66,6 +66,8 @@ class RCJSoccerRobot:
         self.strategy_4_data = {"forward": True, "function": 1}
         self.ball_intercept_pos = None
         self.ball_intercept_direction = 0
+        self.initial_ball_pos = 0
+        self.predicting = False
 
         self.start_time = time.time()
 

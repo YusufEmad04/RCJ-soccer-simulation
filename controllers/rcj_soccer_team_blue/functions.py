@@ -176,7 +176,7 @@ def get_team_ball_data(robot: RCJSoccerRobot):
         clear_ball_data(robot)
 
 
-def move_to_point(robot: RCJSoccerRobot, coord, forward=True):
+def move_to_point_3(robot: RCJSoccerRobot, coord, forward=True):
     robot_pos = robot.robot_pos_arr[-1]
     heading = robot.heading
 
@@ -268,6 +268,68 @@ def move_to_point2(robot: RCJSoccerRobot, coord, forward=True):
         elif -180 <= angle < 0:
             robot.left_motor.setVelocity(-10)
             robot.right_motor.setVelocity(10)
+
+
+def move_to_point(robot: RCJSoccerRobot, coord, forward=True):
+    robot_pos = robot.robot_pos_arr[-1]
+    heading = robot.heading
+
+    angle = get_coord_angle(robot_pos, heading, coord)
+
+    if not forward:
+
+        if 0 <= angle <= 180:
+            angle -= 180
+        else:
+            angle += 180
+
+    # checking coordinate is on right
+    if 0 <= angle <= 180:
+
+        # checking if coordinate is in front or behind
+        if 0 <= angle <= 90:
+
+            ratio = 1 - (angle / 90)
+            speed = 20 * ratio - 10
+
+        else:
+            speed = -10
+
+        # set each wheel's speed (left is at maximum, right is according to ratio)
+        if forward:
+            robot.left_motor.setVelocity(speed)
+            robot.right_motor.setVelocity(10)
+            # robot.left_motor.setVelocity(-10)
+            # robot.right_motor.setVelocity(-10 * ratio)
+        else:
+            robot.left_motor.setVelocity(-10)
+            robot.right_motor.setVelocity(-speed)
+            # robot.right_motor.setVelocity(10)
+            # robot.left_motor.setVelocity(10 * ratio)
+
+    # checking coordinate is on left
+    elif -180 <= angle < 0:
+
+        # checking if coordinate is in front or behind
+        if -90 <= angle < 0:
+
+            ratio = 1 + (angle / 90)
+            speed = 20 * ratio - 10
+
+        else:
+            speed = -10
+
+        # set each wheel's speed (right is at maximum, left is according to ratio)
+        if forward:
+            robot.left_motor.setVelocity(10)
+            robot.right_motor.setVelocity(speed)
+            # robot.left_motor.setVelocity(-10 * ratio)
+            # robot.right_motor.setVelocity(-10)
+        else:
+            robot.left_motor.setVelocity(-speed)
+            robot.right_motor.setVelocity(-10)
+            # robot.right_motor.setVelocity(10 * ratio)
+            # robot.left_motor.setVelocity(10)
 
 
 def move_to_direction(robot: RCJSoccerRobot, direction, forward=True):
@@ -520,6 +582,7 @@ def defend_strategy_2(robot: RCJSoccerRobot, was_intercepting=True):
         robot.intercepting_ball[0] = True
         robot.intercepting_ball[1] = 2
         predicted_pos = predict_ball_pos(robot, 18)
+        # predicted_pos = predict_optimal_pos(robot, False)
         robot.ball_intercept_pos = predicted_pos
         robot.ball_intercept_direction = get_ball_speed(robot)[1]
         robot.initial_ball_pos = get_ball_speed(robot)[2]
@@ -529,18 +592,20 @@ def defend_strategy_2(robot: RCJSoccerRobot, was_intercepting=True):
 
         # check if robot arrived to intercept position
 
-        if (pos[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= pos[0] + 0.025) and (
-                pos[1] - 0.025 <= robot.robot_pos_arr[-1][1] <= pos[1] + 0.025):
+        if (pos[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= pos[0] + 0.04) and (
+                pos[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= pos[1] + 0.04):
             print("\n__stop\n")
             robot.right_motor.setVelocity(0)
             robot.left_motor.setVelocity(0)
         else:
             move_to_point(robot, robot.ball_intercept_pos)
+            # move_to_point(robot, robot.ball_intercept_pos)
 
         # check if ball has changed its direction
 
         if not robot.ball_pos_arr:
             move_to_point(robot, robot.ball_intercept_pos)
+            # move_to_point(robot, robot.ball_intercept_pos)
 
         elif (get_ball_speed(robot)[1] > robot.ball_intercept_direction + 60) or (
                 get_ball_speed(robot)[1] < robot.ball_intercept_direction - 60):
@@ -739,6 +804,19 @@ def predict_ball_pos(robot: RCJSoccerRobot, t):
         return speed[2][0] + dist_x, speed[2][1] + dist_y
 
 
+def predict_ball_time(robot: RCJSoccerRobot, dist):
+    if robot.ball_pos_arr:
+        speed = get_ball_speed(robot)
+        if speed[0] == 0:
+            return 0
+
+        return dist / (speed[0] / 100)
+
+
+def predict_optimal_pos(robot: RCJSoccerRobot, defence=True):
+    pass
+
+
 def diff_steer(robot_pos, heading, left_speed, right_speed, t):
     x = robot_pos[0]
     y = robot_pos[1]
@@ -763,10 +841,8 @@ def diff_steer(robot_pos, heading, left_speed, right_speed, t):
 
 def predict_robot_time(robot: RCJSoccerRobot, robot_pos, heading, coord, t):
 
-    robot.predicting = True
-
-    if (coord[0] - 0.025 <= robot_pos[0] <= coord[0] + 0.025) and (
-            coord[1] - 0.025 <= robot_pos[1] <= coord[1] + 0.025):
+    if (coord[0] - 0.03 <= robot_pos[0] <= coord[0] + 0.03) and (
+            coord[1] - 0.03 <= robot_pos[1] <= coord[1] + 0.03):
         return t, heading
     else:
 
@@ -778,12 +854,14 @@ def predict_robot_time(robot: RCJSoccerRobot, robot_pos, heading, coord, t):
             if 0 <= angle <= 90:
 
                 ratio = 1 - (angle / 90)
+                speed = 20 * ratio - 10
 
             else:
-                ratio = (90 - angle) / 90
+                speed = -10
 
-            predicted_robot_pos = diff_steer(robot_pos, heading, 10, 10 * ratio, 1)
-            return predict_robot_time(robot, (predicted_robot_pos[0], predicted_robot_pos[1]), predicted_robot_pos[2], coord, t + 1)
+            predicted_robot_pos = diff_steer(robot_pos, heading, 10, speed, 1)
+            return predict_robot_time(robot, (predicted_robot_pos[0], predicted_robot_pos[1]), predicted_robot_pos[2],
+                                      coord, t + 1)
 
         # checking coordinate is on left
         elif -180 <= angle < 0:
@@ -792,9 +870,11 @@ def predict_robot_time(robot: RCJSoccerRobot, robot_pos, heading, coord, t):
             if -90 <= angle < 0:
 
                 ratio = 1 + (angle / 90)
+                speed = 20 * ratio - 10
 
             else:
-                ratio = (angle + 90) / 90
+                speed = -10
 
-            predicted_robot_pos = diff_steer(robot_pos, heading, 10 * ratio, 10, 1)
-            return predict_robot_time(robot, (predicted_robot_pos[0], predicted_robot_pos[1]), predicted_robot_pos[2], coord, t + 1)
+            predicted_robot_pos = diff_steer(robot_pos, heading, speed, 10, 1)
+            return predict_robot_time(robot, (predicted_robot_pos[0], predicted_robot_pos[1]), predicted_robot_pos[2],
+                                      coord, t + 1)

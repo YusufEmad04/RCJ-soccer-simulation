@@ -23,21 +23,18 @@ class MyRobot1(RCJSoccerRobot):
 
                     # data from the ball receiver (ball receiver)
                     ball_data = receive_ball_data(self)
-                    defend(self)
-
-                    # move towards the ball
-                    # move_to_point(self, data["robot position"], data["heading"], ball_data["ball position"], True)
+                    # defend(self)
+                    intercept_ball(self)
 
                     # Send message to team robots and prints
-                    self.send_data_to_team(self.player_id, self.robot_pos_arr[-1], self.ball_pos_arr[-1], True)
+                    send_team_data(self)
 
                 # robot can't see the ball
                 else:
 
                     get_team_ball_data(self)
-                    defend(self)
 
-                    # robot moves to origin
-                    # move_to_point(self, data["robot position"], data["heading"], [0, 0], True)
+                    # defend(self)
+                    intercept_ball(self)
 
-                    self.send_data_to_team(self.player_id, data["robot position"], [-2, -2], False)
+                    send_team_data(self)

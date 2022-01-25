@@ -29,7 +29,7 @@ class MyRobot2(RCJSoccerRobot):
                     move_to_point(self, ball_data["ball position"])
 
                     # Send message to team robots and prints
-                    self.send_data_to_team(self.player_id, data["robot position"], ball_data["ball position"], True)
+                    send_team_data(self)
 
                 # robot can't see the ball
                 else:
@@ -39,4 +39,4 @@ class MyRobot2(RCJSoccerRobot):
                     # robot moves to origin
                     move_to_point(self, [0, 0])
 
-                    self.send_data_to_team(self.player_id, data["robot position"], [-2, -2], False)
+                    send_team_data(self)

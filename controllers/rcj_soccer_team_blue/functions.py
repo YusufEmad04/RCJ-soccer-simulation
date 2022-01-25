@@ -941,22 +941,36 @@ def diff_steer(robot_pos, heading, left_speed, right_speed, t):
         h = 360 + h
     h = h * math.pi / 180
 
+    # get turning speed for motors
     vr = right_speed * 0.0255 / 10
     vl = left_speed * 0.0255 / 10
 
+    if vl == vr or (vl + vr) == 0:
+        vr = vl - 0.00001
+
+    # get x and y changes (radius and angle as functions of time)
     x_change = + ((0.09 * (vl + vr)) / (2 * (vl - vr))) * (math.sin(((t * (vl - vr)) / 0.09) + h) - math.sin(h))
     y_change = - ((0.09 * (vl + vr)) / (2 * (vl - vr))) * (math.cos(((t * (vl - vr)) / 0.09) + h) - math.cos(h))
 
+    # heading after arrival
     angle = (((t * (vl - vr)) / 0.09) + h) * 180 / math.pi
 
     if angle > 180:
         angle = -360 + angle
 
-    return x + x_change, y + y_change, angle
+    # getting arc length
+    dist = get_dist(robot_pos, (x + x_change, y + y_change))
+    radius = ((0.09 * (vl + vr)) / (2 * (vl - vr)))
+
+    a = math.acos(((dist ** 2) - (2 * (radius ** 2))) / -(2 * (radius ** 2)))
+
+    # getting speed
+    sp = (radius * a) * 100 / t
+
+    return x + x_change, y + y_change, angle, sp
 
 
 def predict_robot_time(robot: RCJSoccerRobot, robot_pos, heading, coord, t):
-
     # check if predicted robot position is within the range of the coordinate
     if (coord[0] - 0.03 <= robot_pos[0] <= coord[0] + 0.03) and (
             coord[1] - 0.03 <= robot_pos[1] <= coord[1] + 0.03):

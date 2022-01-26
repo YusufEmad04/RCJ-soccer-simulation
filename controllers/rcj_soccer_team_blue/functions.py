@@ -101,7 +101,6 @@ def receive_data(robot: RCJSoccerRobot):
     while robot.is_new_team_data():
         # data from the team receiver (team receiver)
         team_data.append(robot.get_new_team_data())
-        team_data.append(robot.get_new_team_data())
 
     r = [None] * 3
 
@@ -435,10 +434,9 @@ def get_ultrasonic_dist(r):
 def intercept_ball(robot: RCJSoccerRobot):
     if robot.ball_pos_arr:
         if get_ball_speed(robot)[0] > 2:
-            print("speed: {}".format(get_ball_speed(robot)[0]))
             if robot.intercepting_ball[0]:
-                print("intercepting at {},   dir {}".format(robot.ball_intercept_pos,
-                                                            robot.ball_intercept_direction))
+                # print("intercepting at {},   dir {}".format(robot.ball_intercept_pos,
+                #                                             robot.ball_intercept_direction))
                 defend_strategy_2(robot)
             else:
                 speed = get_ball_speed(robot)
@@ -518,7 +516,7 @@ def check_strategy(robot: RCJSoccerRobot):
 
     if robot.intercepting_ball[0]:
         # if robot was already intercepting the ball
-        print("intercepting at {},   dir {}".format(robot.ball_intercept_pos, robot.ball_intercept_direction))
+        # print("intercepting at {},   dir {}".format(robot.ball_intercept_pos, robot.ball_intercept_direction))
 
         # check which strategy the robot was intercepting from
         strategies = [defend_strategy_2, None, defend_strategy_4]
@@ -531,7 +529,7 @@ def check_strategy(robot: RCJSoccerRobot):
         if (check_ball_status(robot) == 4) or (check_ball_status(robot) == 3):
 
             # go forward and backward
-            print("normal")
+            # print("normal")
             defend_strategy_1(robot)
         elif check_ball_status(robot) == 1:
 
@@ -976,15 +974,18 @@ def diff_steer(robot_pos, heading, left_speed, right_speed, t):
     return x + x_change, y + y_change, angle, sp
 
 
-def predict_robot_time(robot: RCJSoccerRobot, robot_pos, heading, coord, t):
-    # check if predicted robot position is within the range of the coordinate
-    if (coord[0] - 0.03 <= robot_pos[0] <= coord[0] + 0.03) and (
-            coord[1] - 0.03 <= robot_pos[1] <= coord[1] + 0.03):
-        return t, heading, robot_pos
-    else:
+def predict_robot_time(robot_pos, heading, coord, t):
 
-        # get angle of coordinate from robot position
-        angle = get_coord_angle(robot_pos, heading, coord)
+    rp = robot_pos
+    h = heading
+    t = t
+
+    # check if predicted robot position is within the range of the coordinate
+    while not ((coord[0] - 0.03 <= rp[0] <= coord[0] + 0.03) and (
+            coord[1] - 0.03 <= rp[1] <= coord[1] + 0.03)):
+        t += 1
+
+        angle = get_coord_angle(rp, h, coord)
 
         # get each motor speed
         if 0 <= angle <= 180:
@@ -999,9 +1000,10 @@ def predict_robot_time(robot: RCJSoccerRobot, robot_pos, heading, coord, t):
                 speed = -10
 
             # recursively call the function using the predicted robot position and heading after 1 time step
-            predicted_robot_pos = diff_steer(robot_pos, heading, 10, speed, 1)
-            return predict_robot_time(robot, (predicted_robot_pos[0], predicted_robot_pos[1]), predicted_robot_pos[2],
-                                      coord, t + 1)
+            predicted_robot_pos = diff_steer(rp, h, 10, speed, 1)
+
+            rp = predicted_robot_pos[0], predicted_robot_pos[1]
+            h = predicted_robot_pos[2]
 
         # checking coordinate is on left
         elif -180 <= angle < 0:
@@ -1016,6 +1018,13 @@ def predict_robot_time(robot: RCJSoccerRobot, robot_pos, heading, coord, t):
                 speed = -10
 
             # recursively call the function using the predicted robot position and heading
-            predicted_robot_pos = diff_steer(robot_pos, heading, speed, 10, 1)
-            return predict_robot_time(robot, (predicted_robot_pos[0], predicted_robot_pos[1]), predicted_robot_pos[2],
-                                      coord, t + 1)
+            predicted_robot_pos = diff_steer(rp, h, speed, 10, 1)
+
+            rp = predicted_robot_pos[0], predicted_robot_pos[1]
+            h = predicted_robot_pos[2]
+
+            if t > 100:
+                return False
+
+    return t, h, rp
+

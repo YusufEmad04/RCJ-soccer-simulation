@@ -3,6 +3,7 @@
 # You can also import scripts that you put into the folder with controller
 
 from functions import *
+from functions2 import *
 from rcj_soccer_robot import RCJSoccerRobot, TIME_STEP
 
 
@@ -23,11 +24,15 @@ class MyRobot1(RCJSoccerRobot):
 
                     # data from the ball receiver (ball receiver)
                     ball_data = receive_ball_data(self)
-                    defend(self)
-
+                    ball_speed = get_ball_speed(self)
+                    robot_speed = get_robot_speed(self)
+                    speed = ball_speed[0]
+                    # defend(self)
+                    move_Fwd(self, data["robot position"], data["heading"], ball_data["ball position"], ball_speed)
                     # move towards the ball
                     # move_to_point(self, data["robot position"], data["heading"], ball_data["ball position"], True)
-
+                    print("Ball speed {}".format(speed))
+                    print("Robot speed {}".format(robot_speed[0]))
                     # Send message to team robots and prints
                     self.send_data_to_team(self.player_id, self.robot_pos_arr[-1], self.ball_pos_arr[-1], True)
 
@@ -35,7 +40,7 @@ class MyRobot1(RCJSoccerRobot):
                 else:
 
                     get_team_ball_data(self)
-                    defend(self)
+                    # defend(self)
 
                     # robot moves to origin
                     # move_to_point(self, data["robot position"], data["heading"], [0, 0], True)

@@ -42,63 +42,6 @@ def get_dist(robot_pos, coord):
     dist = math.sqrt((coord[0]-robot_pos[0]) ** 2 + (coord[1]-robot_pos[1]) ** 2)
     return dist
 
-
-def move_Fwd(robot: RCJSoccerRobot, robot_pos, heading, coord, distance, ball_speed):
-    if ball_speed < 0.5:
-        robot.left_motor.setVelocity(-3)
-        robot.right_motor.setVelocity(-3)
-    elif ball_speed < 10:
-        robot.left_motor.setVelocity(-ball_speed)
-        robot.right_motor.setVelocity(-ball_speed)
-    else:
-        robot.left_motor.setVelocity(0)
-        robot.right_motor.setVelocity(0)
-    """angle = get_coord_angle(robot_pos, heading, coord)
-    # To get current distance from ball
-    dist = get_dist(robot_pos, coord)
-    dist_ratio = 0
-    if distance != 0:
-        dist_ratio = dist/distance
-        if dist_ratio > 1:
-            dist_ratio = 1
-        print("Distance Ratio is", dist_ratio)
-    # checking coordinate is on right
-    if dist <= 0.10:
-        dist_ratio * 0.4
-    if -10 <= angle <= 10:
-        robot.left_motor.setVelocity(-10*dist_ratio)
-        robot.right_motor.setVelocity(-10*dist_ratio)
-    elif 10 <= angle <= 180:
-
-        # checking if coordinate is in front or behind
-        if 10 <= angle <= 90:
-
-            ratio = 1 - (angle / 90)
-
-        else:
-            ratio = (90 - angle) / 90
-
-        # set each wheel's speed (left is at maximum, right is according to ratio)
-        robot.left_motor.setVelocity(-10 * dist_ratio)
-        robot.right_motor.setVelocity((-10) * ratio * dist_ratio)
-
-    # checking coordinate is on left
-    elif -180 <= angle < -10:
-
-        # checking if coordinate is in front or behind
-        if -90 <= angle < -10:
-
-            ratio = 1 + (angle / 90)
-
-        else:
-            ratio = (angle + 90) / 90
-
-        # set each wheel's speed (right is at maximum, left is according to ratio)
-        robot.left_motor.setVelocity((-10) * ratio * dist_ratio)
-        robot.right_motor.setVelocity(-10 * dist_ratio)
-"""
-
-
 def dir_of_move(heading, dir):
     """
     Function to get angle needed to rotate ball to specific direction assuming ball is in front
@@ -152,3 +95,41 @@ def move_dir(robot: RCJSoccerRobot, robot_pos, heading, coord, distance, ball_sp
         # set each wheel's speed (right is at maximum, left is according to ratio)
         robot.left_motor.setVelocity((-10) * ratio)
         robot.right_motor.setVelocity(-10)
+
+def move_Fwd(robot: RCJSoccerRobot, robot_pos, heading, coord, ball_speed):
+    # if ball_speed < 0.5:
+    #     robot.left_motor.setVelocity(-3)
+    #     robot.right_motor.setVelocity(-3)
+    # elif ball_speed < 10:
+    #     robot.left_motor.setVelocity(-ball_speed)
+    #     robot.right_motor.setVelocity(-ball_speed)
+    # else:
+    #     robot.left_motor.setVelocity(0)
+    #     robot.right_motor.setVelocity(0)
+    """Just move forward"""
+    dist = get_dist(robot_pos,coord)
+    if dist <= 0.08:
+        robot.left_motor.setVelocity(1.5)
+        robot.right_motor.setVelocity(1.5)
+    else:
+        robot.left_motor.setVelocity(10)
+        robot.right_motor.setVelocity(10)
+
+def predict_ball_pos(robot: RCJSoccerRobot, t):
+    if robot.ball_pos_arr:
+        speed = get_ball_speed(robot)
+
+        hyp = t * speed[0]
+        dist_x = hyp * math.cos(speed[1] * math.pi / 180) / 100
+        dist_y = hyp * math.sin(speed[1] * math.pi / 180) / 100
+        new_x = speed[2][0] + dist_x
+        new_y = speed[2][1] + dist_y
+        if new_x >= 0.75:
+            new_x -= 0.75
+        elif new_x <= 0.75:
+            new_x += 0.75
+        if new_y >= 0.65:
+            new_y -= 0.65
+        elif new_y >= 0.65:
+            new_y -= 0.65
+        return new_x, new_y

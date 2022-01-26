@@ -439,15 +439,9 @@ def intercept_ball(robot: RCJSoccerRobot):
                 #                                             robot.ball_intercept_direction))
                 defend_strategy_2(robot)
             else:
-                speed = get_ball_speed(robot)
-                if abs(robot.heading - speed[1]) >= 90:
 
-                    print("going to intercept")
-                    defend_strategy_2(robot, False)
-                else:
-                    robot.intercepting_ball[0] = False
-                    robot.right_motor.setVelocity(0)
-                    robot.left_motor.setVelocity(0)
+                print("going to intercept")
+                defend_strategy_2(robot, False)
         else:
             robot.intercepting_ball[0] = False
             robot.right_motor.setVelocity(0)
@@ -975,7 +969,6 @@ def diff_steer(robot_pos, heading, left_speed, right_speed, t):
 
 
 def predict_robot_time(robot_pos, heading, coord, t):
-
     rp = robot_pos
     h = heading
     t = t
@@ -1027,4 +1020,3 @@ def predict_robot_time(robot_pos, heading, coord, t):
                 return False
 
     return t, h, rp
-

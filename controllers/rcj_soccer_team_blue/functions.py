@@ -640,7 +640,7 @@ def defend_strategy_2(robot: RCJSoccerRobot, was_intercepting=True):
 
         if (pos[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= pos[0] + 0.04) and (
                 pos[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= pos[1] + 0.04):
-            print("\n__stop\n")
+            # print("\n__stop\n")
             if robot.ball_pos_arr:
                 # robot moves towards the ball
                 move_to_point(robot, robot.ball_pos_arr[-1])
@@ -911,7 +911,7 @@ def predict_optimal_pos(robot: RCJSoccerRobot, defence=True):
 
         # get robot and ball time to point
         ball_time = predict_ball_time(robot, hyp)
-        robot_time = predict_robot_time(robot, robot.robot_pos_arr[-1], robot.heading, pos, 0)
+        robot_time = predict_robot_time(robot.robot_pos_arr[-1], robot.heading, pos, 0)
 
         # get ball angle when robot arrives to point
         robot_ball_angle = get_coord_angle(robot_time[2], robot_time[1], robot.ball_pos_arr[-1])

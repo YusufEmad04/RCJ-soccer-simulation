@@ -38,4 +38,4 @@ class MyRobot3(RCJSoccerRobot):
                     # robot moves to origin
                     move_to_point(self, [0, 0])
 
-                    send_team_data(self)
+                    send_team_data(self, False)

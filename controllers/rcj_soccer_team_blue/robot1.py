@@ -37,4 +37,4 @@ class MyRobot1(RCJSoccerRobot):
                     # defend(self)
                     intercept_ball(self)
 
-                    send_team_data(self)
+                    send_team_data(self, False)

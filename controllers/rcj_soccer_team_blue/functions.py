@@ -179,8 +179,8 @@ def get_team_ball_data(robot: RCJSoccerRobot):
         clear_ball_data(robot)
 
 
-def send_team_data(robot: RCJSoccerRobot):
-    if robot.ball_pos_arr:
+def send_team_data(robot: RCJSoccerRobot, see_ball=True):
+    if see_ball:
         ball_pos = robot.ball_pos_arr[-1]
         robot.send_data_to_team(robot.player_id, robot.robot_pos_arr[-1], ball_pos, True)
     else:
@@ -432,8 +432,10 @@ def get_ultrasonic_dist(r):
 
 
 def intercept_ball(robot: RCJSoccerRobot):
+    print("in")
     if robot.ball_pos_arr:
         if get_ball_speed(robot)[0] > 2:
+            print(get_ball_speed(robot)[0])
             if robot.intercepting_ball[0]:
                 # print("intercepting at {},   dir {}".format(robot.ball_intercept_pos,
                 #                                             robot.ball_intercept_direction))

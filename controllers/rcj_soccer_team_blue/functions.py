@@ -945,8 +945,11 @@ def diff_steer(robot_pos, heading, left_speed, right_speed, t):
     vr = right_speed * 0.0255 / 10
     vl = left_speed * 0.0255 / 10
 
-    if vl == vr or (vl + vr) == 0:
-        vr = vl - 0.00001
+    if vl == vr:
+        hyp = vr
+        x_change = math.cos(heading * math.pi / 180) * hyp
+        y_change = math.sin(heading * math.pi / 180) * hyp
+        return x + x_change, y + y_change, heading, hyp * 100
 
     # get x and y changes (radius and angle as functions of time)
     x_change = + ((0.09 * (vl + vr)) / (2 * (vl - vr))) * (math.sin(((t * (vl - vr)) / 0.09) + h) - math.sin(h))
@@ -961,6 +964,9 @@ def diff_steer(robot_pos, heading, left_speed, right_speed, t):
     # getting arc length
     dist = get_dist(robot_pos, (x + x_change, y + y_change))
     radius = ((0.09 * (vl + vr)) / (2 * (vl - vr)))
+
+    if radius == 0:
+        return x + x_change, y + y_change, angle, 0
 
     a = math.acos(((dist ** 2) - (2 * (radius ** 2))) / -(2 * (radius ** 2)))
 

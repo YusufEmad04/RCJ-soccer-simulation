@@ -33,6 +33,13 @@ class MyRobot1(RCJSoccerRobot):
                     # move_to_point(self, data["robot position"], data["heading"], ball_data["ball position"], True)
                     print("Ball speed {}".format(speed))
                     print("Robot speed {}".format(robot_speed[0]))
+                    print("Current time step it {}".format(self.time_step))
+                    ball_prediction(self, 5)
+                    print("Current ball position is {}".format(ball_data["ball position"]))
+                    print("Predicted ball position is {}".format(self.predicted_ball_pos) +
+                          " at time {}".format(self.wanted_time))
+                    print(".")
+
                     # Send message to team robots and prints
                     self.send_data_to_team(self.player_id, self.robot_pos_arr[-1], self.ball_pos_arr[-1], True)
 

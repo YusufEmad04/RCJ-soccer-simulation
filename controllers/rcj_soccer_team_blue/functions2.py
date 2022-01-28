@@ -39,8 +39,9 @@ def move_pos(robot_pos, orientation, coord):
 
 
 def get_dist(robot_pos, coord):
-    dist = math.sqrt((coord[0]-robot_pos[0]) ** 2 + (coord[1]-robot_pos[1]) ** 2)
+    dist = math.sqrt((coord[0] - robot_pos[0]) ** 2 + (coord[1] - robot_pos[1]) ** 2)
     return dist
+
 
 def dir_of_move(heading, dir):
     """
@@ -96,6 +97,7 @@ def move_dir(robot: RCJSoccerRobot, robot_pos, heading, coord, distance, ball_sp
         robot.left_motor.setVelocity((-10) * ratio)
         robot.right_motor.setVelocity(-10)
 
+
 def move_Fwd(robot: RCJSoccerRobot, robot_pos, heading, coord, ball_speed):
     # if ball_speed < 0.5:
     #     robot.left_motor.setVelocity(-3)
@@ -107,29 +109,45 @@ def move_Fwd(robot: RCJSoccerRobot, robot_pos, heading, coord, ball_speed):
     #     robot.left_motor.setVelocity(0)
     #     robot.right_motor.setVelocity(0)
     """Just move forward"""
-    dist = get_dist(robot_pos,coord)
-    if dist <= 0.08:
-        robot.left_motor.setVelocity(1.5)
-        robot.right_motor.setVelocity(1.5)
+    dist = get_dist(robot_pos, coord)
+    if dist <= 0.07:
+        robot.left_motor.setVelocity(10)
+        robot.right_motor.setVelocity(10)
     else:
         robot.left_motor.setVelocity(10)
         robot.right_motor.setVelocity(10)
 
+
 def predict_ball_pos(robot: RCJSoccerRobot, t):
     if robot.ball_pos_arr:
         speed = get_ball_speed(robot)
-
         hyp = t * speed[0]
         dist_x = hyp * math.cos(speed[1] * math.pi / 180) / 100
         dist_y = hyp * math.sin(speed[1] * math.pi / 180) / 100
         new_x = speed[2][0] + dist_x
         new_y = speed[2][1] + dist_y
         if new_x >= 0.75:
-            new_x -= 0.75
-        elif new_x <= 0.75:
-            new_x += 0.75
+            new_x = 1.5 - new_x
+        elif new_x <= -0.75:
+            new_x = -1.5 - new_x
         if new_y >= 0.65:
-            new_y -= 0.65
-        elif new_y >= 0.65:
-            new_y -= 0.65
+            new_y = 1.3 - new_y
+        elif new_y <= -0.65:
+            new_y = -1.3 - new_y
         return new_x, new_y
+
+
+def ball_prediction(robot: RCJSoccerRobot, t):
+    if not robot.ball_predict:
+        print("UPDATED \n")
+        robot.wanted_time = t + robot.time_step
+        predicted_ball_pos = predict_ball_pos(robot, t)
+        robot.ball_predict = True
+        robot.after_time = t
+        robot.predicted_ball_pos = predicted_ball_pos
+    else:
+        robot.after_time -= 0.5
+        if robot.wanted_time - robot.time_step == robot.after_time and robot.after_time != 0:
+            print("PENDING \n")
+        else:
+            robot.ball_predict = False

@@ -69,6 +69,11 @@ class RCJSoccerRobot:
         self.initial_ball_pos = 0
         self.predicting = False
 
+        self.wanted_time = 0
+        self.after_time = 0
+        self.predicted_ball_pos = [0, 0]
+        self.ball_predict = False
+
         self.start_time = time.time()
 
     def parse_supervisor_msg(self, packet: str) -> dict:

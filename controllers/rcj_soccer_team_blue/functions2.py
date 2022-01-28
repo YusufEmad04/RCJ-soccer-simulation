@@ -126,6 +126,7 @@ def predict_ball_pos(robot: RCJSoccerRobot, t):
         dist_y = hyp * math.sin(speed[1] * math.pi / 180) / 100
         new_x = speed[2][0] + dist_x
         new_y = speed[2][1] + dist_y
+        # Subtracting difference to predict off walls
         if new_x >= 0.75:
             new_x = 1.5 - new_x
         elif new_x <= -0.75:
@@ -138,15 +139,19 @@ def predict_ball_pos(robot: RCJSoccerRobot, t):
 
 
 def ball_prediction(robot: RCJSoccerRobot, t):
+    # check if already predicted or yet to predict
     if not robot.ball_predict:
         print("UPDATED \n")
+        # wanted time to know when prediction
         robot.wanted_time = t + robot.time_step
         predicted_ball_pos = predict_ball_pos(robot, t)
         robot.ball_predict = True
         robot.after_time = t
         robot.predicted_ball_pos = predicted_ball_pos
     else:
+        # decrement time remaining till predicted time
         robot.after_time -= 0.5
+        # re-predict time after wanted time reached
         if robot.wanted_time - robot.time_step == robot.after_time and robot.after_time != 0:
             print("PENDING \n")
         else:

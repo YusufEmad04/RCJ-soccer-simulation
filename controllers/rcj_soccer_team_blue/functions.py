@@ -368,6 +368,36 @@ def adjust_heading(robot: RCJSoccerRobot, obj):
         robot.right_motor.setVelocity(0)
 
 
+def adjust_heading_to_angle(robot: RCJSoccerRobot, angle):
+    heading = robot.heading
+    if heading > angle:
+
+        if heading - angle >= 350:
+            return True
+        elif max(abs(heading), abs(angle)) - min(abs(heading), abs(angle)) < 10:
+            return True
+
+        if heading - angle > 180:
+            robot.right_motor.setVelocity(10)
+            robot.left_motor.setVelocity(-10)
+        else:
+            robot.right_motor.setVelocity(-10)
+            robot.left_motor.setVelocity(10)
+    else:
+
+        if heading - angle <= -350:
+            return True
+        elif max(abs(heading), abs(angle)) - min(abs(heading), abs(angle)) < 10:
+            return True
+
+        if heading - angle < -180:
+            robot.right_motor.setVelocity(-10)
+            robot.left_motor.setVelocity(10)
+        else:
+            robot.right_motor.setVelocity(10)
+            robot.left_motor.setVelocity(-10)
+
+
 def add_to_arr(arr, data):
     arr.append(data)
     if len(arr) >= 4:
@@ -432,13 +462,10 @@ def get_ultrasonic_dist(r):
 
 
 def intercept_ball(robot: RCJSoccerRobot):
-    print("in")
     if robot.ball_pos_arr:
         if get_ball_speed(robot)[0] > 2:
             print(get_ball_speed(robot)[0])
             if robot.intercepting_ball[0]:
-                # print("intercepting at {},   dir {}".format(robot.ball_intercept_pos,
-                #                                             robot.ball_intercept_direction))
                 defend_strategy_2(robot)
             else:
 
@@ -851,6 +878,26 @@ def predict_ball_pos(robot: RCJSoccerRobot, t):
         dist_x = hyp * math.cos(speed[1] * math.pi / 180) / 100
         dist_y = hyp * math.sin(speed[1] * math.pi / 180) / 100
 
+        direction = speed[1]
+        gradient = math.tan(direction * math.pi / 180)
+        constant = speed[2][1] - (gradient * speed[2][0])
+
+        # right or down wall
+        if 0 <= direction < 90:
+            right_interception = [0.729, 0.729*gradient + constant]
+            down_interception = [(0.629 - constant) / gradient, 0.629]
+        # down or left wall
+        elif 90 <= direction <= 180:
+            left_interception = [-0.729, -0.729 * gradient + constant]
+            down_interception = [(0.629 - constant) / gradient, 0.629]
+        # up or right wall
+        elif -90 <= direction < 0:
+            right_interception = [0.729, 0.729 * gradient + constant]
+            up_interception = [(0.629 - constant) / gradient, 0.629]
+        # left or up wall
+        elif -180 <= direction < -90:
+            pass
+
         return speed[2][0] + dist_x, speed[2][1] + dist_y
 
 
@@ -894,7 +941,7 @@ def predict_optimal_pos(robot: RCJSoccerRobot, defence=True):
     dist = get_dist(b2, b1)
     pos = (0, 0)
     ball_time = 0
-    robot_time = 0
+    robot_time = (0, 0, 0)
 
     # divide distance into equal parts with length 0.05
     for i in range(int(dist / 0.05)):
@@ -912,7 +959,7 @@ def predict_optimal_pos(robot: RCJSoccerRobot, defence=True):
         # get ball angle when robot arrives to point
         robot_ball_angle = get_coord_angle(robot_time[2], robot_time[1], robot.ball_pos_arr[-1])
         # estimate turing time for robot to adjust heading towards the ball
-        turn_time = (robot_ball_angle / 360) * 14
+        turn_time = (abs(robot_ball_angle) / 360) * 14
 
         # final time take by the robot = robot time to point + turning time + 4.5 time step
         final_robot_time = robot_time[0] + turn_time + 4.5

@@ -12,6 +12,7 @@ class MyRobot3(RCJSoccerRobot):
         while self.robot.step(TIME_STEP) != -1:
             # each two loops time step is increased by 1
             increment_step(self)
+            adjust_stuck_timer(self)
 
             # check if there is data from (supervisor receiver)
             if self.is_new_data():

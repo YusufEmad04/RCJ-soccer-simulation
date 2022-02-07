@@ -884,19 +884,95 @@ def predict_ball_pos(robot: RCJSoccerRobot, t):
 
         # right or down wall
         if 0 <= direction < 90:
-            right_interception = [0.729, 0.729*gradient + constant]
+            right_interception = [0.729, 0.729 * gradient + constant]
             down_interception = [(0.629 - constant) / gradient, 0.629]
+
+            x_corner = (1.317 - constant) / (1 + gradient)
+            y_corner = gradient * x_corner + constant
+
+            corner_intercept = [x_corner, y_corner]
+
+            dist_right = get_dist(speed[2], right_interception)
+            dist_down = get_dist(speed[2], down_interception)
+            dist_corner = get_dist(speed[2], corner_intercept)
+
+            shortest_dist = min(dist_corner, dist_right, dist_down)
+
+            if shortest_dist == dist_corner:
+                pass
+            elif shortest_dist == dist_right:
+                pass
+            elif shortest_dist == dist_down:
+                pass
+
         # down or left wall
         elif 90 <= direction <= 180:
             left_interception = [-0.729, -0.729 * gradient + constant]
             down_interception = [(0.629 - constant) / gradient, 0.629]
+
+            x_corner = (constant - 1.3179) / (1 - gradient)
+            y_corner = gradient * x_corner + constant
+
+            corner_intercept = [x_corner, y_corner]
+
+            dist_left = get_dist(speed[2], left_interception)
+            dist_corner = get_dist(speed[2], corner_intercept)
+            dist_down = get_dist(speed[2], down_interception)
+
+            shortest_dist = min(dist_corner, dist_left, dist_down)
+
+            if shortest_dist == dist_corner:
+                pass
+            elif shortest_dist == dist_left:
+                pass
+            elif shortest_dist == dist_down:
+                pass
+
         # up or right wall
         elif -90 <= direction < 0:
             right_interception = [0.729, 0.729 * gradient + constant]
-            up_interception = [(0.629 - constant) / gradient, 0.629]
+            up_interception = [(-0.629 - constant) / gradient, -0.629]
+
+            x_corner = (-constant - 1.3179) / (1 - gradient)
+            y_corner = gradient * x_corner + constant
+
+            corner_intercept = [x_corner, y_corner]
+
+            dist_right = get_dist(speed[2], right_interception)
+            dist_up = get_dist(speed[2], up_interception)
+            dist_corner = get_dist(speed[2], corner_intercept)
+
+            shortest_dist = min(dist_corner, dist_right, dist_up)
+
+            if shortest_dist == dist_corner:
+                pass
+            elif shortest_dist == dist_up:
+                pass
+            elif shortest_dist == dist_right:
+                pass
+
         # left or up wall
         elif -180 <= direction < -90:
-            pass
+            left_interception = [-0.729, -0.729 * gradient + constant]
+            up_interception = [(-0.629 - constant) / gradient, -0.629]
+
+            x_corner = -(1.317 + constant) / (1 + gradient)
+            y_corner = gradient * x_corner + constant
+
+            corner_intercept = [x_corner, y_corner]
+
+            dist_left = get_dist(speed[2], left_interception)
+            dist_up = get_dist(speed[2], up_interception)
+            dist_corner = get_dist(speed[2], corner_intercept)
+
+            shortest_dist = min(dist_corner, dist_left, dist_up)
+
+            if shortest_dist == dist_corner:
+                pass
+            elif shortest_dist == dist_left:
+                pass
+            elif shortest_dist == dist_up:
+                pass
 
         return speed[2][0] + dist_x, speed[2][1] + dist_y
 
@@ -942,6 +1018,7 @@ def predict_optimal_pos(robot: RCJSoccerRobot, defence=True):
     pos = (0, 0)
     ball_time = 0
     robot_time = (0, 0, 0)
+    final_robot_time = 0
 
     # divide distance into equal parts with length 0.05
     for i in range(int(dist / 0.05)):
@@ -1069,3 +1146,40 @@ def predict_robot_time(robot_pos, heading, coord, t):
                 return False
 
     return t, h, rp
+
+
+def shoot(robot: RCJSoccerRobot):
+    if robot.ball_pos_arr:
+        ball_pos = get_ball_speed(robot)[2]
+        goal_pos = 0
+        if ball_pos[1] > 0:
+            goal_pos = [-0.729, -0.075]
+        else:
+            goal_pos = [-0.729, 0.075]
+        goal_angle = get_coord_angle(ball_pos, 0, goal_pos)
+        gradient = math.tan(goal_angle * math.pi / 180)
+        constant = ball_pos[1] - (ball_pos[0] * gradient)
+
+        pos = [ball_pos[0] + 0.15, (ball_pos[0] + 0.15) * gradient + constant]
+
+        if (pos[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= pos[0] + 0.04) and (
+                pos[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= pos[1] + 0.04):
+            robot.arrived = True
+
+        if robot.arrived:
+            move_to_point2(robot, ball_pos)
+
+        else:
+            move_to_point(robot, pos)
+
+
+def adjust_stuck_timer(robot: RCJSoccerRobot):
+    if robot.ball_pos_arr:
+        speed = get_ball_speed(robot)
+        if speed[0] <= 1:
+            if not robot.stuck:
+                robot.stuck = True
+                robot.timer = time.time()
+        else:
+            robot.stuck = False
+            robot.timer = 0

@@ -68,6 +68,9 @@ class RCJSoccerRobot:
         self.ball_intercept_direction = 0
         self.initial_ball_pos = 0
         self.predicting = False
+        self.arrived = False
+        self.timer = 0
+        self.stuck = False
 
         self.start_time = time.time()
 

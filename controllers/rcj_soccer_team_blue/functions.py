@@ -153,6 +153,10 @@ def receive_ball_data(robot: RCJSoccerRobot):
     ball_pos = get_coord_position(heading, ball_distance, robot_ball_angle, robot_pos)
 
     add_to_arr(robot.ball_pos_arr, ball_pos)
+    if len(robot.ball_pos_arr) > 1:
+        robot.last_ball_pos = robot.ball_pos_arr[1]
+
+    check_for_real_speeds(robot, get_ball_speed(robot)[0])
 
     d = {
         "robot ball angle": robot_ball_angle,
@@ -175,6 +179,9 @@ def get_team_ball_data(robot: RCJSoccerRobot):
     # checking if other robots see the ball
     if ball_pos:
         add_to_arr(robot.ball_pos_arr, ball_pos[0])
+        if len(robot.ball_pos_arr) > 1:
+            robot.last_ball_pos = robot.ball_pos_arr[1]
+        check_for_real_speeds(robot, get_ball_speed(robot)[0])
     else:
         clear_ball_data(robot)
 
@@ -248,7 +255,7 @@ def move_to_point_3(robot: RCJSoccerRobot, coord, forward=True):
             # robot.left_motor.setVelocity(10)
 
 
-def move_to_point2(robot: RCJSoccerRobot, coord, forward=True):
+def move_to_point2(robot: RCJSoccerRobot, coord, forward=True, s=10):
     robot_pos = robot.robot_pos_arr[-1]
     heading = robot.heading
 
@@ -258,28 +265,28 @@ def move_to_point2(robot: RCJSoccerRobot, coord, forward=True):
 
     if forward:
         if -10 <= angle <= 10:
-            robot.left_motor.setVelocity(10)
-            robot.right_motor.setVelocity(10)
+            robot.left_motor.setVelocity(s)
+            robot.right_motor.setVelocity(s)
             # robot.left_motor.setVelocity(-10)
             # robot.right_motor.setVelocity(-10)
         elif 0 <= angle <= 180:
-            robot.left_motor.setVelocity(-10)
-            robot.right_motor.setVelocity(10)
+            robot.left_motor.setVelocity(-s)
+            robot.right_motor.setVelocity(s)
         elif -180 <= angle < 0:
-            robot.left_motor.setVelocity(10)
-            robot.right_motor.setVelocity(-10)
+            robot.left_motor.setVelocity(s)
+            robot.right_motor.setVelocity(-s)
     else:
         if (170 <= angle <= 180) or (-180 <= angle <= -170):
-            robot.left_motor.setVelocity(-10)
-            robot.right_motor.setVelocity(-10)
+            robot.left_motor.setVelocity(-s)
+            robot.right_motor.setVelocity(-s)
             # robot.left_motor.setVelocity(10)
             # robot.right_motor.setVelocity(10)
         elif 0 <= angle <= 180:
-            robot.left_motor.setVelocity(10)
-            robot.right_motor.setVelocity(-10)
+            robot.left_motor.setVelocity(s)
+            robot.right_motor.setVelocity(-s)
         elif -180 <= angle < 0:
-            robot.left_motor.setVelocity(-10)
-            robot.right_motor.setVelocity(10)
+            robot.left_motor.setVelocity(-s)
+            robot.right_motor.setVelocity(s)
 
 
 def move_to_point(robot: RCJSoccerRobot, coord, forward=True, s=10):
@@ -422,6 +429,7 @@ def get_robot_speed(robot: RCJSoccerRobot):
 def increment_step(robot: RCJSoccerRobot):
     robot.time_step += 0.5
     add_to_arr(robot.time_steps_arr, robot.time_step)
+    check_for_relocation_data(robot)
 
 
 def clear_ball_data(robot: RCJSoccerRobot):
@@ -1149,37 +1157,94 @@ def predict_robot_time(robot_pos, heading, coord, t):
 
 
 def shoot(robot: RCJSoccerRobot):
-    if robot.ball_pos_arr:
-        ball_pos = get_ball_speed(robot)[2]
-        goal_pos = 0
-        if ball_pos[1] > 0:
-            goal_pos = [-0.729, -0.075]
+
+    if robot.stuck:
+        if robot.ball_pos_arr and robot.relocated:
+            ball_pos = get_ball_speed(robot)[2]
+            if ball_pos[1] > 0:
+                goal_pos = [-0.729, -0.075]
+            else:
+                goal_pos = [-0.729, 0.075]
+            goal_angle = get_coord_angle(ball_pos, 0, goal_pos)
+            gradient = math.tan(goal_angle * math.pi / 180)
+            constant = ball_pos[1] - (ball_pos[0] * gradient)
+
+            pos = [ball_pos[0] + 0.15, (ball_pos[0] + 0.15) * gradient + constant]
+
+            if (pos[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= pos[0] + 0.04) and (
+                    pos[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= pos[1] + 0.04):
+                robot.arrived_to_shoot = True
+
+            if robot.arrived_to_shoot:
+                move_to_point2(robot, goal_pos)
+
+            else:
+                move_to_point(robot, pos)
         else:
-            goal_pos = [-0.729, 0.075]
-        goal_angle = get_coord_angle(ball_pos, 0, goal_pos)
-        gradient = math.tan(goal_angle * math.pi / 180)
-        constant = ball_pos[1] - (ball_pos[0] * gradient)
 
-        pos = [ball_pos[0] + 0.15, (ball_pos[0] + 0.15) * gradient + constant]
+            pos = [0.1, 0]
+            goal_pos = [-0.729, 0]
 
-        if (pos[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= pos[0] + 0.04) and (
-                pos[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= pos[1] + 0.04):
-            robot.arrived = True
+            if (pos[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= pos[0] + 0.04) and (
+                    pos[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= pos[1] + 0.04):
+                robot.arrived = True
 
-        if robot.arrived:
-            move_to_point2(robot, ball_pos)
+            if robot.arrived:
+                # if robot.ball_pos_arr:
+                #     robot.right_motor.setVelocity(0)
+                #     robot.left_motor.setVelocity(0)
+                # else:
+                #
+                #     move_to_point2(robot, goal_pos, s=3)
 
-        else:
-            move_to_point(robot, pos)
+                robot.right_motor.setVelocity(0)
+                robot.left_motor.setVelocity(0)
+
+            else:
+                move_to_point(robot, pos)
 
 
-def adjust_stuck_timer(robot: RCJSoccerRobot):
+def check_for_relocation_data(robot: RCJSoccerRobot):
+    speed = (0, 0, 0)
     if robot.ball_pos_arr:
         speed = get_ball_speed(robot)
-        if speed[0] <= 1:
-            if not robot.stuck:
-                robot.stuck = True
-                robot.timer = time.time()
+    if speed[0] <= 1 or (not robot.ball_pos_arr):
+        if not robot.stuck:
+            robot.stuck = True
+            robot.timer = time.time()
+    elif speed[0] > 3 and robot.real_speed:
+        robot.stuck = False
+        robot.timer = 0
+        robot.arrived = False
+        robot.arrived_to_shoot = False
+        robot.relocated = False
+        robot.ready_for_relocation = False
+
+    check_for_relocation(robot)
+
+
+def check_for_relocation(robot: RCJSoccerRobot):
+    if robot.stuck and robot.time_step > 8:
+        if not robot.ball_pos_arr:
+            robot.ready_for_relocation = True
         else:
-            robot.stuck = False
-            robot.timer = 0
+            if robot.ready_for_relocation:
+                if get_ball_speed(robot)[0] == 0 or (abs(robot.last_ball_pos[0] - robot.ball_pos_arr[-1][0]) > 0.1) or (
+                        abs(robot.last_ball_pos[1] - robot.ball_pos_arr[-1][1]) > 0.1):
+                    robot.relocated = True
+
+
+def check_for_real_speeds(robot: RCJSoccerRobot, speed):
+    if robot.temp_speeds:
+        if abs(robot.temp_speeds[-1] - speed) > 1:
+            robot.temp_speeds = []
+            robot.real_speed = False
+        else:
+            robot.temp_speeds.append(speed)
+
+        if len(robot.temp_speeds) >= 5:
+            robot.real_speed = True
+        else:
+            robot.real_speed = False
+    else:
+        robot.temp_speeds.append(speed)

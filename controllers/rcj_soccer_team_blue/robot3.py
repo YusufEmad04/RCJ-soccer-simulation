@@ -1,6 +1,7 @@
 # rcj_soccer_player controller - ROBOT B3
 # Feel free to import built-in libraries
 # You can also import scripts that you put into the folder with controller
+import time
 
 from functions import *
 from rcj_soccer_robot import RCJSoccerRobot, TIME_STEP
@@ -12,7 +13,6 @@ class MyRobot3(RCJSoccerRobot):
         while self.robot.step(TIME_STEP) != -1:
             # each two loops time step is increased by 1
             increment_step(self)
-            adjust_stuck_timer(self)
 
             # check if there is data from (supervisor receiver)
             if self.is_new_data():

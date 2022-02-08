@@ -71,6 +71,13 @@ class RCJSoccerRobot:
         self.arrived = False
         self.timer = 0
         self.stuck = False
+        self.relocated = False
+        self.relocation_pos = 0
+        self.arrived_to_shoot = False
+        self.ready_for_relocation = False
+        self.last_ball_pos = [0,0]
+        self.real_speed = False
+        self.temp_speeds = []
 
         self.start_time = time.time()
 

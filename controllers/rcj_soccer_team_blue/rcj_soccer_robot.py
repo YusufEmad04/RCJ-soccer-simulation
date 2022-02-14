@@ -56,6 +56,8 @@ class RCJSoccerRobot:
         self.ball_pos_arr = []
         self.robot_pos_arr = []
         self.time_steps_arr = []
+        self.temp_speeds = []
+        self.dist_arr = []
 
         self.moving_to_x = False
         self.moving_to_y = False
@@ -75,9 +77,35 @@ class RCJSoccerRobot:
         self.relocation_pos = 0
         self.arrived_to_shoot = False
         self.ready_for_relocation = False
-        self.last_ball_pos = [0,0]
+        self.last_ball_pos = [0, 0]
         self.real_speed = False
-        self.temp_speeds = []
+
+        self.flags = {
+            "moving to x": False,
+            "moving to y": False,
+            "moving to z": True,
+            "moving forward": False,
+            "moving backward": False,
+            "intercepting ball": [False, 0],
+            "strategy 4 data": {
+                "forward": True,
+                "function": 1
+            },
+            "ball intercept pos": None,
+            "ball intercept direction": 0,
+            "initial ball pos": 0,
+            "predicting": False,
+            "arrived": False,
+            "timer": 0,
+            "stuck": False,
+            "relocated": False,
+            "relocation pos": 0,
+            "arrived to shoot": False,
+            "ready for relocation": False,
+            "last ball pos": [0, 0],
+            "real speed": False,
+            "ball getting closer": False
+        }
 
         self.start_time = time.time()
 

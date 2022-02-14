@@ -24,7 +24,7 @@ class MyRobot1(RCJSoccerRobot):
                     # data from the ball receiver (ball receiver)
                     ball_data = receive_ball_data(self)
                     # defend(self)
-                    intercept_ball(self)
+                    # intercept_ball(self)
 
                     # Send message to team robots and prints
                     send_team_data(self)
@@ -35,6 +35,6 @@ class MyRobot1(RCJSoccerRobot):
                     get_team_ball_data(self)
 
                     # defend(self)
-                    intercept_ball(self)
+                    # intercept_ball(self)
 
                     send_team_data(self, False)

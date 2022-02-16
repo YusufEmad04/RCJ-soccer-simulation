@@ -79,6 +79,8 @@ class RCJSoccerRobot:
         self.ready_for_relocation = False
         self.last_ball_pos = [0, 0]
         self.real_speed = False
+        self.mimic_coord = [0, 0]
+        self.mimic_timer = 0
 
         self.flags = {
             "moving to x": False,
@@ -104,7 +106,9 @@ class RCJSoccerRobot:
             "ready for relocation": False,
             "last ball pos": [0, 0],
             "real speed": False,
-            "ball getting closer": False
+            "ball getting closer": False,
+            "arrived at mimicPos": False,
+            "going to mimicPos": False
         }
 
         self.start_time = time.time()

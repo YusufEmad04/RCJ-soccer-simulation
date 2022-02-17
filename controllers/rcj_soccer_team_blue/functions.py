@@ -897,6 +897,25 @@ def defend_strategy_5(robot: RCJSoccerRobot, predicted_pos=None, was_interceptin
         move_to_point2(robot, robot.ball_intercept_pos, False)
 
 
+def mimic(robot: RCJSoccerRobot):
+    # Get coord corresponding to ball on our line and go to point
+    coord = [0.3, robot.ball_pos_arr[-1][1]]
+    if (coord[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= coord[0] + 0.025) and (
+            coord[1] - 0.025 <= robot.robot_pos_arr[-1][1] <= coord[1] + 0.025):
+        """Stop temporarily"""
+        print("Arrived")
+        robot.right_motor.setVelocity(0)
+        robot.left_motor.setVelocity(0)
+    elif coord[1] >= robot.robot_pos_arr[-1][1]:
+        print("forward")
+        robot.right_motor.setVelocity(10)
+        robot.left_motor.setVelocity(10)
+    else:
+        print("backward")
+        robot.right_motor.setVelocity(-10)
+        robot.left_motor.setVelocity(-10)
+
+
 def defend_strategy_mimic(robot: RCJSoccerRobot):
     # TODO Mimic and timer
     # Only set mimic coordinate once and then head to it
@@ -915,13 +934,21 @@ def defend_strategy_mimic(robot: RCJSoccerRobot):
         else:
             # Adjust angle to start mimic
             if 87 <= robot.heading <= 92 or -92 <= robot.heading <= -87:
-                robot.right_motor.setVelocity(0)
-                robot.left_motor.setVelocity(0)
-                print("mimic")
+                # Start mimicking ball
+                mimic(robot)
             elif robot.heading >= 0:
-                adjust_heading_to_angle(robot, 90, s=5)
+                print("Adjusting heading")
+                adjust_heading_to_angle(robot, 90, s=4)
             else:
-                adjust_heading_to_angle(robot, -90, s=5)
+                print("Adjusting heading")
+                adjust_heading_to_angle(robot, -90, s=4)
+
+
+def call_mimic(robot:RCJSoccerRobot):
+    defend_strategy_mimic(robot)
+    if (robot.flags["arrived at mimicPos"]) and not (robot.mimic_coord[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= robot.mimic_coord[0] + 0.025):
+        robot.flags["arrived at mimicPos"] = False
+        robot.flags["going to mimicPos"] = False
 
 
 def predict_ball_pos(robot: RCJSoccerRobot, t):
@@ -1328,6 +1355,46 @@ def handle_ball(robot: RCJSoccerRobot):
     #     motors_speed = ball_speed * 10 / 2.55
     #     robot.right_motor.setVelocity(motors_speed)
     #     robot.left_motor.setVelocity(motors_speed)
+
+
+def handle_2(robot: RCJSoccerRobot):
+    def turn_right():
+        robot.right_motor.setVelocity(10)
+        robot.left_motor.setVelocity(6)
+
+    def turn_left():
+        robot.right_motor.setVelocity(6)
+        robot.left_motor.setVelocity(10)
+
+    if robot.robot_pos_arr[-1][1] > 0:
+        left = True
+    else:
+        left = False
+
+    robot_goal = get_coord_angle(robot.robot_pos_arr[-1], 180, [-0.729, 0])
+    ball_goal = get_coord_angle(robot.ball_pos_arr[-1], 180, [-0.729, 0])
+    robot_ball_dist = get_dist(robot.ball_pos_arr[-1], robot.robot_pos_arr[-1])
+    ball_speed = get_ball_speed()
+
+    diff = robot_goal - ball_goal
+
+    if robot_ball_dist > 0.08:
+
+        move_to_point(robot, robot.ball_pos_arr[-1])
+    else:
+
+        if diff > 10:
+            if left:
+                turn_right()
+            else:
+                turn_left()
+        elif diff < -10:
+            if left:
+                turn_left()
+            else:
+                turn_right()
+        else:
+            pass
 
 
 def check_ball_dir_robot(robot: RCJSoccerRobot):

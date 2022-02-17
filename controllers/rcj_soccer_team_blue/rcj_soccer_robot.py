@@ -58,6 +58,8 @@ class RCJSoccerRobot:
         self.time_steps_arr = []
         self.temp_speeds = []
         self.dist_arr = []
+        self.right_wheel_vel = 0
+        self.left_wheel_vel = 0
 
         self.moving_to_x = False
         self.moving_to_y = False
@@ -81,6 +83,9 @@ class RCJSoccerRobot:
         self.real_speed = False
         self.mimic_coord = [0, 0]
         self.mimic_timer = 0
+        self.mimic_stuck_pos = [0, 0]
+        self.mimic_stuck = False
+        self.mimic_flag = False
 
         self.flags = {
             "moving to x": False,
@@ -112,6 +117,14 @@ class RCJSoccerRobot:
         }
 
         self.start_time = time.time()
+
+    def set_right_vel(self, v):
+        self.right_motor.setVelocity(v)
+        self.right_wheel_vel = v
+
+    def set_left_vel(self, v):
+        self.left_motor.setVelocity(v)
+        self.left_wheel_vel = v
 
     def parse_supervisor_msg(self, packet: str) -> dict:
         """Parse message received from supervisor

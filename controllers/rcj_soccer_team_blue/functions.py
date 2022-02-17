@@ -229,15 +229,15 @@ def move_to_point_3(robot: RCJSoccerRobot, coord, forward=True):
 
         # set each wheel's speed (left is at maximum, right is according to ratio)
         if forward:
-            robot.left_motor.setVelocity(10 * ratio)
-            robot.right_motor.setVelocity(10)
-            # robot.left_motor.setVelocity(-10)
-            # robot.right_motor.setVelocity(-10 * ratio)
+            robot.set_left_vel(10 * ratio)
+            robot.set_right_vel(10)
+            # robot.set_left_vel(-10)
+            # robot.set_right_vel(-10 * ratio)
         else:
-            robot.left_motor.setVelocity(-10)
-            robot.right_motor.setVelocity(-10 * ratio)
-            # robot.right_motor.setVelocity(10)
-            # robot.left_motor.setVelocity(10 * ratio)
+            robot.set_left_vel(-10)
+            robot.set_right_vel(-10 * ratio)
+            # robot.set_right_vel(10)
+            # robot.set_left_vel(10 * ratio)
 
     # checking coordinate is on left
     elif -180 <= angle < 0:
@@ -252,15 +252,15 @@ def move_to_point_3(robot: RCJSoccerRobot, coord, forward=True):
 
         # set each wheel's speed (right is at maximum, left is according to ratio)
         if forward:
-            robot.left_motor.setVelocity(10)
-            robot.right_motor.setVelocity(10 * ratio)
-            # robot.left_motor.setVelocity(-10 * ratio)
-            # robot.right_motor.setVelocity(-10)
+            robot.set_left_vel(10)
+            robot.set_right_vel(10 * ratio)
+            # robot.set_left_vel(-10 * ratio)
+            # robot.set_right_vel(-10)
         else:
-            robot.left_motor.setVelocity(-10 * ratio)
-            robot.right_motor.setVelocity(-10)
-            # robot.right_motor.setVelocity(10 * ratio)
-            # robot.left_motor.setVelocity(10)
+            robot.set_left_vel(-10 * ratio)
+            robot.set_right_vel(-10)
+            # robot.set_right_vel(10 * ratio)
+            # robot.set_left_vel(10)
 
 
 def move_to_point2(robot: RCJSoccerRobot, coord, forward=True, s=10):
@@ -273,28 +273,28 @@ def move_to_point2(robot: RCJSoccerRobot, coord, forward=True, s=10):
 
     if forward:
         if -10 <= angle <= 10:
-            robot.left_motor.setVelocity(s)
-            robot.right_motor.setVelocity(s)
-            # robot.left_motor.setVelocity(-10)
-            # robot.right_motor.setVelocity(-10)
+            robot.set_left_vel(s)
+            robot.set_right_vel(s)
+            # robot.set_left_vel(-10)
+            # robot.set_right_vel(-10)
         elif 0 <= angle <= 180:
-            robot.left_motor.setVelocity(-s)
-            robot.right_motor.setVelocity(s)
+            robot.set_left_vel(-s)
+            robot.set_right_vel(s)
         elif -180 <= angle < 0:
-            robot.left_motor.setVelocity(s)
-            robot.right_motor.setVelocity(-s)
+            robot.set_left_vel(s)
+            robot.set_right_vel(-s)
     else:
         if (170 <= angle <= 180) or (-180 <= angle <= -170):
-            robot.left_motor.setVelocity(-s)
-            robot.right_motor.setVelocity(-s)
-            # robot.left_motor.setVelocity(10)
-            # robot.right_motor.setVelocity(10)
+            robot.set_left_vel(-s)
+            robot.set_right_vel(-s)
+            # robot.set_left_vel(10)
+            # robot.set_right_vel(10)
         elif 0 <= angle <= 180:
-            robot.left_motor.setVelocity(s)
-            robot.right_motor.setVelocity(-s)
+            robot.set_left_vel(s)
+            robot.set_right_vel(-s)
         elif -180 <= angle < 0:
-            robot.left_motor.setVelocity(-s)
-            robot.right_motor.setVelocity(s)
+            robot.set_left_vel(-s)
+            robot.set_right_vel(s)
 
 
 def move_to_point(robot: RCJSoccerRobot, coord, forward=True, s=10):
@@ -324,15 +324,15 @@ def move_to_point(robot: RCJSoccerRobot, coord, forward=True, s=10):
 
         # set each wheel's speed (left is at maximum, right is according to ratio)
         if forward:
-            robot.left_motor.setVelocity(speed)
-            robot.right_motor.setVelocity(s)
-            # robot.left_motor.setVelocity(-10)
-            # robot.right_motor.setVelocity(-10 * ratio)
+            robot.set_left_vel(speed)
+            robot.set_right_vel(s)
+            # robot.set_left_vel(-10)
+            # robot.set_right_vel(-10 * ratio)
         else:
-            robot.left_motor.setVelocity(-s)
-            robot.right_motor.setVelocity(-speed)
-            # robot.right_motor.setVelocity(10)
-            # robot.left_motor.setVelocity(10 * ratio)
+            robot.set_left_vel(-s)
+            robot.set_right_vel(-speed)
+            # robot.set_right_vel(10)
+            # robot.set_left_vel(10 * ratio)
 
     # checking coordinate is on left
     elif -180 <= angle < 0:
@@ -348,15 +348,15 @@ def move_to_point(robot: RCJSoccerRobot, coord, forward=True, s=10):
 
         # set each wheel's speed (right is at maximum, left is according to ratio)
         if forward:
-            robot.left_motor.setVelocity(s)
-            robot.right_motor.setVelocity(speed)
-            # robot.left_motor.setVelocity(-10 * ratio)
-            # robot.right_motor.setVelocity(-10)
+            robot.set_left_vel(s)
+            robot.set_right_vel(speed)
+            # robot.set_left_vel(-10 * ratio)
+            # robot.set_right_vel(-10)
         else:
-            robot.left_motor.setVelocity(-speed)
-            robot.right_motor.setVelocity(-s)
-            # robot.right_motor.setVelocity(10 * ratio)
-            # robot.left_motor.setVelocity(10)
+            robot.set_left_vel(-speed)
+            robot.set_right_vel(-s)
+            # robot.set_right_vel(10 * ratio)
+            # robot.set_left_vel(10)
 
 
 def move_to_direction(robot: RCJSoccerRobot, direction, forward=True):
@@ -373,14 +373,14 @@ def adjust_heading(robot: RCJSoccerRobot, obj):
     angle = get_coord_angle(robot_pos, heading, obj)
 
     if 5 <= angle <= 180:
-        robot.left_motor.setVelocity(-10)
-        robot.right_motor.setVelocity(10)
+        robot.set_left_vel(-10)
+        robot.set_right_vel(10)
     elif -180 <= angle <= -5:
-        robot.left_motor.setVelocity(10)
-        robot.right_motor.setVelocity(-10)
+        robot.set_left_vel(10)
+        robot.set_right_vel(-10)
     else:
-        robot.left_motor.setVelocity(0)
-        robot.right_motor.setVelocity(0)
+        robot.set_left_vel(0)
+        robot.set_right_vel(0)
 
 
 def adjust_heading_to_angle(robot: RCJSoccerRobot, angle, s=10):
@@ -393,11 +393,11 @@ def adjust_heading_to_angle(robot: RCJSoccerRobot, angle, s=10):
             return True
 
         if heading - angle > 180:
-            robot.right_motor.setVelocity(s)
-            robot.left_motor.setVelocity(-s)
+            robot.set_right_vel(s)
+            robot.set_left_vel(-s)
         else:
-            robot.right_motor.setVelocity(-s)
-            robot.left_motor.setVelocity(s)
+            robot.set_right_vel(-s)
+            robot.set_left_vel(s)
     else:
 
         if heading - angle <= -350:
@@ -406,11 +406,11 @@ def adjust_heading_to_angle(robot: RCJSoccerRobot, angle, s=10):
             return True
 
         if heading - angle < -180:
-            robot.right_motor.setVelocity(-s)
-            robot.left_motor.setVelocity(s)
+            robot.set_right_vel(-s)
+            robot.set_left_vel(s)
         else:
-            robot.right_motor.setVelocity(s)
-            robot.left_motor.setVelocity(-s)
+            robot.set_right_vel(s)
+            robot.set_left_vel(-s)
 
 
 def add_to_arr(arr, data):
@@ -451,14 +451,24 @@ def get_ball_speed(robot: RCJSoccerRobot):
 
 
 def get_relative_ball_speed(robot: RCJSoccerRobot):
-    if robot.dist_arr:
-        total_dist = robot.dist_arr[-1] - robot.dist_arr[0]
-        total_time = robot.time_steps_arr[-1] - robot.time_steps_arr[0]
+    ball_data = get_ball_speed(robot)
+    robot_speed = diff_steer(robot.robot_pos_arr[-1], robot.heading, robot.left_wheel_vel, robot.right_wheel_vel, 1)[3]
 
-        if total_time == 0:
-            return 0
+    ball_y, ball_x = ball_data[0] * math.sin(ball_data[1] * math.pi / 180), ball_data[0] * math.cos(
+        ball_data[1] * math.pi / 180)
+    robot_y, robot_x = robot_speed * math.sin(robot.heading * math.pi / 180), robot_speed * math.cos(
+        robot.heading * math.pi / 180)
 
-        return total_dist * 100 / total_time
+    final_y, final_x = robot_y - ball_y, robot_x - ball_x
+
+    speed = math.sqrt(
+        (final_y**2) + (final_x**2)
+    )
+
+    if robot.flags["ball getting closer"]:
+        return speed * -1
+    else:
+        return speed
 
 
 def get_ball_speed_old(robot: RCJSoccerRobot, this_robot=True):
@@ -501,12 +511,12 @@ def intercept_ball(robot: RCJSoccerRobot):
                 defend_strategy_2(robot, False)
         else:
             robot.flags["intercepting ball"][0] = False
-            robot.right_motor.setVelocity(0)
-            robot.left_motor.setVelocity(0)
+            robot.set_right_vel(0)
+            robot.set_left_vel(0)
     else:
         robot.flags["intercepting ball"][0] = False
-        robot.right_motor.setVelocity(0)
-        robot.left_motor.setVelocity(0)
+        robot.set_right_vel(0)
+        robot.set_left_vel(0)
 
 
 def defend(robot: RCJSoccerRobot):
@@ -523,8 +533,8 @@ def defend(robot: RCJSoccerRobot):
     #
     # elif check_ball_status(robot) == 4:
     #
-    #     robot.right_motor.setVelocity(-10)
-    #     robot.left_motor.setVelocity(-10)
+    #     robot.set_right_vel(-10)
+    #     robot.set_left_vel(-10)
 
     check_strategy(robot)
 
@@ -637,14 +647,14 @@ def defend_strategy_1(robot: RCJSoccerRobot):
 
         # move to y
 
-        # robot.right_motor.setVelocity(0)
-        # robot.left_motor.setVelocity(0)
+        # robot.set_right_vel(0)
+        # robot.set_left_vel(0)
 
         if robot.ball_pos_arr:
             adjust_heading(robot, robot.ball_pos_arr[-1])
         else:
-            robot.right_motor.setVelocity(0)
-            robot.left_motor.setVelocity(0)
+            robot.set_right_vel(0)
+            robot.set_left_vel(0)
 
         if time.time() - robot.start_time > 1:
             move_to_point2(robot, outside)
@@ -658,14 +668,14 @@ def defend_strategy_1(robot: RCJSoccerRobot):
             robot.flags["moving forward"] = True
             robot.start_time = time.time()
 
-        # robot.right_motor.setVelocity(0)
-        # robot.left_motor.setVelocity(0)
+        # robot.set_right_vel(0)
+        # robot.set_left_vel(0)
 
         if robot.ball_pos_arr:
             adjust_heading(robot, robot.ball_pos_arr[-1])
         else:
-            robot.right_motor.setVelocity(0)
-            robot.left_motor.setVelocity(0)
+            robot.set_right_vel(0)
+            robot.set_left_vel(0)
 
         # move to y
         if time.time() - robot.start_time > 2:
@@ -697,8 +707,8 @@ def defend_strategy_2(robot: RCJSoccerRobot, was_intercepting=True):
                 # robot moves towards the ball
                 move_to_point(robot, robot.ball_pos_arr[-1])
             else:
-                robot.right_motor.setVelocity(0)
-                robot.left_motor.setVelocity(0)
+                robot.set_right_vel(0)
+                robot.set_left_vel(0)
         else:
             move_to_point(robot, robot.ball_intercept_pos)
             # move_to_point(robot, robot.ball_intercept_pos)
@@ -825,8 +835,8 @@ def defend_strategy_4(robot: RCJSoccerRobot, was_intercepting=True):
                 return True
 
         if arrived(robot.ball_intercept_pos):
-            robot.right_motor.setVelocity(0)
-            robot.left_motor.setVelocity(0)
+            robot.set_right_vel(0)
+            robot.set_left_vel(0)
             # robot.intercepting_ball[0] = False
             # robot.intercepting_ball[1] = 0
         else:
@@ -900,20 +910,39 @@ def defend_strategy_5(robot: RCJSoccerRobot, predicted_pos=None, was_interceptin
 def mimic(robot: RCJSoccerRobot):
     # Get coord corresponding to ball on our line and go to point
     coord = [0.3, robot.ball_pos_arr[-1][1]]
-    if (coord[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= coord[0] + 0.025) and (
-            coord[1] - 0.025 <= robot.robot_pos_arr[-1][1] <= coord[1] + 0.025):
-        """Stop temporarily"""
-        print("Arrived")
-        robot.right_motor.setVelocity(0)
-        robot.left_motor.setVelocity(0)
-    elif coord[1] >= robot.robot_pos_arr[-1][1]:
-        print("forward")
-        robot.right_motor.setVelocity(10)
-        robot.left_motor.setVelocity(10)
+    angle = get_coord_angle(robot.robot_pos_arr[-1], robot.heading, coord)
+    if -90 <= angle <= 90:
+        forward = True
     else:
-        print("backward")
-        robot.right_motor.setVelocity(-10)
-        robot.left_motor.setVelocity(-10)
+        forward = False
+    if 10 >= time.time() - robot.mimic_timer >= 6:
+        if get_dist(robot.robot_pos_arr[-1], robot.mimic_stuck_pos) <= 0.1:
+            print("mimic stuck")
+            robot.mimic_stuck = True
+        else:
+            print("mimic reset")
+            robot.mimic_timer = 0
+            robot.mimic_stuck_pos = [0, 0]
+            robot.mimic_flag = False
+            robot.mimic_stuck = False
+    if robot.mimic_stuck:
+        move_to_point(robot, robot.ball_pos_arr[-1])
+    else:
+        if (coord[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= coord[0] + 0.025) and (
+                coord[1] - 0.025 <= robot.robot_pos_arr[-1][1] <= coord[1] + 0.025):
+            robot.set_right_vel(0)
+            robot.set_left_vel(0)
+            if not robot.mimic_flag:
+                robot.mimic_timer = time.time()
+                robot.mimic_stuck_pos = robot.robot_pos_arr[-1]
+                print("Stuck pos", robot.mimic_stuck_pos)
+                robot.mimic_flag = True
+        elif forward:
+            robot.set_right_vel(10)
+            robot.set_left_vel(10)
+        else:
+            robot.set_right_vel(-10)
+            robot.set_left_vel(-10)
 
 
 def defend_strategy_mimic(robot: RCJSoccerRobot):
@@ -1265,14 +1294,14 @@ def shoot(robot: RCJSoccerRobot):
 
             if robot.arrived:
                 # if robot.ball_pos_arr:
-                #     robot.right_motor.setVelocity(0)
-                #     robot.left_motor.setVelocity(0)
+                #     robot.set_right_vel(0)
+                #     robot.set_left_vel(0)
                 # else:
                 #
                 #     move_to_point2(robot, goal_pos, s=3)
 
-                robot.right_motor.setVelocity(0)
-                robot.left_motor.setVelocity(0)
+                robot.set_right_vel(0)
+                robot.set_left_vel(0)
 
             else:
                 move_to_point(robot, pos)
@@ -1329,42 +1358,42 @@ def handle_ball(robot: RCJSoccerRobot):
     ball_speed = get_ball_speed(robot)[0]
 
     if robot_ball_dist > 0.08:
-        # robot.right_motor.setVelocity(10)
-        # robot.left_motor.setVelocity(10)
+        # robot.set_right_vel(10)
+        # robot.set_left_vel(10)
         move_to_point(robot, robot.ball_pos_arr[-1])
 
     else:
         if ball_speed >= 2.55:
-            # robot.right_motor.setVelocity(10)
-            # robot.left_motor.setVelocity(10)
+            # robot.set_right_vel(10)
+            # robot.set_left_vel(10)
             move_to_point(robot, robot.ball_pos_arr[-1])
         elif ball_speed >= 1.7:
             motors_speed = ball_speed * 10 / 2.55
-            # robot.right_motor.setVelocity(motors_speed)
-            # robot.left_motor.setVelocity(motors_speed)
+            # robot.set_right_vel(motors_speed)
+            # robot.set_left_vel(motors_speed)
             move_to_point(robot, robot.ball_pos_arr[-1], s=motors_speed)
         else:
-            # robot.right_motor.setVelocity(6)
-            # robot.left_motor.setVelocity(6)
+            # robot.set_right_vel(6)
+            # robot.set_left_vel(6)
             move_to_point(robot, robot.ball_pos_arr[-1], s=6)
 
     # if robot_ball_dist < 0.085:
-    #     robot.right_motor.setVelocity(5.75)
-    #     robot.left_motor.setVelocity(5.75)
+    #     robot.set_right_vel(5.75)
+    #     robot.set_left_vel(5.75)
     # else:
     #     motors_speed = ball_speed * 10 / 2.55
-    #     robot.right_motor.setVelocity(motors_speed)
-    #     robot.left_motor.setVelocity(motors_speed)
+    #     robot.set_right_vel(motors_speed)
+    #     robot.set_left_vel(motors_speed)
 
 
 def handle_2(robot: RCJSoccerRobot):
     def turn_right():
-        robot.right_motor.setVelocity(10)
-        robot.left_motor.setVelocity(6)
+        robot.set_right_vel(10)
+        robot.set_left_vel(6)
 
     def turn_left():
-        robot.right_motor.setVelocity(6)
-        robot.left_motor.setVelocity(10)
+        robot.set_right_vel(6)
+        robot.set_left_vel(10)
 
     if robot.robot_pos_arr[-1][1] > 0:
         left = True
@@ -1374,7 +1403,7 @@ def handle_2(robot: RCJSoccerRobot):
     robot_goal = get_coord_angle(robot.robot_pos_arr[-1], 180, [-0.729, 0])
     ball_goal = get_coord_angle(robot.ball_pos_arr[-1], 180, [-0.729, 0])
     robot_ball_dist = get_dist(robot.ball_pos_arr[-1], robot.robot_pos_arr[-1])
-    ball_speed = get_ball_speed()
+    # ball_speed = get_ball_speed()
 
     diff = robot_goal - ball_goal
 

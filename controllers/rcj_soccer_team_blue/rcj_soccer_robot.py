@@ -56,7 +56,8 @@ class RCJSoccerRobot:
         self.ball_pos_arr = []
         self.robot_pos_arr = []
         self.time_steps_arr = []
-        self.temp_speeds = []
+        self.temp_ball_speeds = []
+        self.temp_robot_speeds = []
         self.dist_arr = []
         self.right_wheel_vel = 0
         self.left_wheel_vel = 0
@@ -86,6 +87,8 @@ class RCJSoccerRobot:
         self.mimic_stuck_pos = [0, 0]
         self.mimic_stuck = False
         self.mimic_flag = False
+        self.stuck_timer = 0
+        self.stuck_pos = [0, 0]
 
         self.flags = {
             "moving to x": False,
@@ -113,7 +116,11 @@ class RCJSoccerRobot:
             "real speed": False,
             "ball getting closer": False,
             "arrived at mimicPos": False,
-            "going to mimicPos": False
+            "going to mimicPos": False,
+            "adjusted heading": False,
+            "robot is stuck": False,
+            "real ball speed": False,
+            "real robot speed": False
         }
 
         self.start_time = time.time()

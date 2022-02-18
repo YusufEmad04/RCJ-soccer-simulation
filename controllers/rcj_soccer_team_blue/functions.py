@@ -77,6 +77,8 @@ def receive_data(robot: RCJSoccerRobot):
 
     add_to_arr(robot.robot_pos_arr, robot_pos)
 
+    check_for_real_robot_speed(robot, get_robot_speed(robot)[0])
+
     # data from the supervisor (supervisor receiver)
     data = robot.get_new_data()
 
@@ -160,7 +162,7 @@ def receive_ball_data(robot: RCJSoccerRobot):
     if len(robot.ball_pos_arr) > 1:
         robot.last_ball_pos = robot.ball_pos_arr[1]
 
-    check_for_real_speeds(robot, get_ball_speed(robot)[0])
+    check_for_real_ball_speed(robot, get_ball_speed(robot)[0])
 
     d = {
         "robot ball angle": robot_ball_angle,
@@ -189,7 +191,7 @@ def get_team_ball_data(robot: RCJSoccerRobot):
 
         if len(robot.ball_pos_arr) > 1:
             robot.last_ball_pos = robot.ball_pos_arr[1]
-        check_for_real_speeds(robot, get_ball_speed(robot)[0])
+        check_for_real_ball_speed(robot, get_ball_speed(robot)[0])
     else:
         clear_ball_data(robot)
 
@@ -438,6 +440,7 @@ def increment_step(robot: RCJSoccerRobot):
     robot.time_step += 0.5
     add_to_arr(robot.time_steps_arr, robot.time_step)
     check_for_relocation_data(robot)
+    adjust_robot_stuck_timer(robot)
 
 
 def clear_ball_data(robot: RCJSoccerRobot):
@@ -462,7 +465,7 @@ def get_relative_ball_speed(robot: RCJSoccerRobot):
     final_y, final_x = robot_y - ball_y, robot_x - ball_x
 
     speed = math.sqrt(
-        (final_y**2) + (final_x**2)
+        (final_y ** 2) + (final_x ** 2)
     )
 
     if robot.flags["ball getting closer"]:
@@ -973,9 +976,10 @@ def defend_strategy_mimic(robot: RCJSoccerRobot):
                 adjust_heading_to_angle(robot, -90, s=4)
 
 
-def call_mimic(robot:RCJSoccerRobot):
+def call_mimic(robot: RCJSoccerRobot):
     defend_strategy_mimic(robot)
-    if (robot.flags["arrived at mimicPos"]) and not (robot.mimic_coord[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= robot.mimic_coord[0] + 0.025):
+    if (robot.flags["arrived at mimicPos"]) and not (
+            robot.mimic_coord[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= robot.mimic_coord[0] + 0.025):
         robot.flags["arrived at mimicPos"] = False
         robot.flags["going to mimicPos"] = False
 
@@ -1315,7 +1319,7 @@ def check_for_relocation_data(robot: RCJSoccerRobot):
         if not robot.stuck:
             robot.stuck = True
             robot.timer = time.time()
-    elif speed[0] > 3 and robot.real_speed:
+    elif speed[0] > 3 and robot.flags["real ball speed"]:
         robot.stuck = False
         robot.timer = 0
         robot.arrived = False
@@ -1337,20 +1341,38 @@ def check_for_relocation(robot: RCJSoccerRobot):
                     robot.relocated = True
 
 
-def check_for_real_speeds(robot: RCJSoccerRobot, speed):
-    if robot.temp_speeds:
-        if abs(robot.temp_speeds[-1] - speed) > 1:
-            robot.temp_speeds = []
-            robot.real_speed = False
+def check_for_real_ball_speed(robot: RCJSoccerRobot, speed):
+    if robot.temp_ball_speeds:
+        if abs(robot.temp_ball_speeds[-1] - speed) > 1:
+            robot.temp_ball_speeds = []
+            robot.flags["real ball speed"] = False
         else:
-            robot.temp_speeds.append(speed)
+            robot.temp_ball_speeds.append(speed)
 
-        if len(robot.temp_speeds) >= 5:
-            robot.real_speed = True
+        if len(robot.temp_ball_speeds) >= 5:
+            robot.flags["real ball speed"] = True
+            robot.temp_ball_speeds.pop(0)
         else:
-            robot.real_speed = False
+            robot.flags["real ball speed"] = False
     else:
-        robot.temp_speeds.append(speed)
+        robot.temp_ball_speeds.append(speed)
+
+
+def check_for_real_robot_speed(robot: RCJSoccerRobot, speed):
+    if robot.temp_robot_speeds:
+        if abs(robot.temp_robot_speeds[-1] - speed) > 1:
+            robot.temp_robot_speeds = []
+            robot.flags["real robot speed"] = False
+        else:
+            robot.temp_robot_speeds.append(speed)
+
+        if len(robot.temp_robot_speeds) >= 5:
+            robot.flags["real robot speed"] = True
+            robot.temp_robot_speeds.pop(0)
+        else:
+            robot.flags["real robot speed"] = False
+    else:
+        robot.temp_robot_speeds.append(speed)
 
 
 def handle_ball(robot: RCJSoccerRobot):
@@ -1435,3 +1457,49 @@ def check_ball_dir_robot(robot: RCJSoccerRobot):
             robot.flags["ball getting closer"] = True
         else:
             robot.flags["ball getting closer"] = False
+
+
+def adjust_robot_stuck_timer(robot: RCJSoccerRobot):
+    if robot.robot_pos_arr:
+        if get_robot_speed(robot)[0] < 1 and robot.flags["real robot speed"]:
+            if not robot.flags["robot is stuck"]:
+                robot.stuck_timer = time.time()
+                robot.flags["robot is stuck"] = True
+                robot.stuck_pos = robot.robot_pos_arr[-1]
+        else:
+            if not ((robot.stuck_pos[0] - 0.1 <= robot.robot_pos_arr[-1][0] <= robot.stuck_pos[0] + 0.1) and (
+                    robot.stuck_pos[1] - 0.1 <= robot.robot_pos_arr[-1][1] <= robot.stuck_pos[1] + 0.1)):
+                robot.stuck_timer = 0
+                robot.flags["robot is stuck"] = False
+                robot.stuck_pos = [0, 0]
+
+
+def mimic2(robot: RCJSoccerRobot):
+    if robot.flags["robot is stuck"] and (15 >= time.time() - robot.stuck_timer >= 10):
+        move_to_point(robot, robot.ball_pos_arr[-1])
+    else:
+
+        if abs(robot.robot_pos_arr[-1][0] - 0.3) > 0.05:
+            move_to_point(robot, [0.3, robot.ball_pos_arr[-1][1]])
+        else:
+            if robot.flags["adjusted heading"]:
+                coord = [0.3, robot.ball_pos_arr[-1][1]]
+
+                if (coord[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= coord[0] + 0.04) and (
+                        coord[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= coord[1] + 0.04):
+                    robot.set_left_vel(0)
+                    robot.set_right_vel(0)
+                else:
+                    ball_angle = get_coord_angle(robot.robot_pos_arr[-1], robot.heading, robot.ball_pos_arr[-1])
+                    if abs(ball_angle) > 90:
+                        move_to_point(robot, coord, forward=False)
+                    else:
+                        move_to_point(robot, coord)
+
+            else:
+                if robot.heading > 0:
+                    if adjust_heading_to_angle(robot, 90, s=7):
+                        robot.flags["adjusted heading"] = True
+                else:
+                    if adjust_heading_to_angle(robot, -90, s=7):
+                        robot.flags["adjusted heading"] = True

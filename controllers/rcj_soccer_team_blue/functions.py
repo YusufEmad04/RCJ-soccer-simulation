@@ -427,7 +427,7 @@ def get_speed(t, pos):
     dist = math.sqrt(y + x)
     t = t[-1] - t[0]
     if time == 0:
-        return 0
+        return 0, get_coord_angle(pos[0], 0, pos[-1]), pos[-1]
 
     return (100 * dist / t), get_coord_angle(pos[0], 0, pos[-1]), pos[-1]
 
@@ -996,6 +996,8 @@ def predict_ball_pos(robot: RCJSoccerRobot, t):
 
         direction = speed[1]
         gradient = math.tan(direction * math.pi / 180)
+        if gradient == 0:
+            gradient = 0.00000000000001
         constant = speed[2][1] - (gradient * speed[2][0])
 
         # right or down wall
@@ -1408,44 +1410,120 @@ def handle_ball(robot: RCJSoccerRobot):
     #     robot.set_left_vel(motors_speed)
 
 
-def handle_2(robot: RCJSoccerRobot):
-    def turn_right():
-        robot.set_right_vel(10)
-        robot.set_left_vel(6)
+def handle2(robot: RCJSoccerRobot):
+    ball_data = get_ball_speed(robot)
+    dist = get_dist(ball_data[2], robot.robot_pos_arr[-1])
+    robot_goal = get_coord_angle(robot.robot_pos_arr[-1], robot.heading, [-0.729, 0])
+    robot_ball = get_coord_angle(robot.robot_pos_arr[-1], robot.heading, robot.ball_pos_arr[-1])
+    predicted_dist = get_dist(robot.ball_predicted_pos, robot.robot_pos_arr[-1])
 
-    def turn_left():
-        robot.set_right_vel(6)
-        robot.set_left_vel(10)
+    diff = robot_goal - robot_ball
 
-    if robot.robot_pos_arr[-1][1] > 0:
-        left = True
-    else:
-        left = False
-
-    robot_goal = get_coord_angle(robot.robot_pos_arr[-1], 180, [-0.729, 0])
-    ball_goal = get_coord_angle(robot.ball_pos_arr[-1], 180, [-0.729, 0])
-    robot_ball_dist = get_dist(robot.ball_pos_arr[-1], robot.robot_pos_arr[-1])
-    # ball_speed = get_ball_speed()
-
-    diff = robot_goal - ball_goal
-
-    if robot_ball_dist > 0.08:
-
+    if dist > 0.16:
         move_to_point(robot, robot.ball_pos_arr[-1])
     else:
-
-        if diff > 10:
-            if left:
-                turn_right()
-            else:
-                turn_left()
-        elif diff < -10:
-            if left:
-                turn_left()
-            else:
-                turn_right()
+        # if robot.flags["shooting from right"]:
+        #     if robot.time_step - robot.shoot_start_time <= 3.5:
+        #         robot.set_right_vel(10)
+        #         robot.set_left_vel(4.5)
+        #     elif robot.time_step - robot.shoot_start_time <= 10:
+        #         robot.set_right_vel(3)
+        #         robot.set_left_vel(10)
+        #     elif robot.time_step - robot.shoot_start_time <= 13:
+        #         move_to_point(robot, robot.ball_pos_arr[-1])
+        #     else:
+        #         robot.flags["shooting from right"] = False
+        #         robot.shoot_start_time = 0
+        # elif robot.flags["shooting from left"]:
+        #     if robot.time_step - robot.shoot_start_time <= 3.5:
+        #         robot.set_right_vel(4.5)
+        #         robot.set_left_vel(10)
+        #     elif robot.time_step - robot.shoot_start_time <= 10:
+        #         robot.set_right_vel(10)
+        #         robot.set_left_vel(3)
+        #     elif robot.time_step - robot.shoot_start_time <= 13:
+        #         move_to_point(robot, robot.ball_pos_arr[-1])
+        #     else:
+        #         robot.flags["shooting from left"] = False
+        #         robot.shoot_start_time = 0
+        # else:
+        #     if diff > 5:
+        #         # right left
+        #         robot.flags["shooting from right"] = True
+        #         robot.shoot_start_time = robot.time_step
+        #     elif diff < -5:
+        #         # left right
+        #         robot.flags["shooting from left"] = True
+        #         robot.shoot_start_time = robot.time_step
+        #     else:
+        #         # match speed
+        #         motors_speed = ball_data[0] * 10 / 2.55
+        #         if motors_speed > 10:
+        #             motors_speed = 10
+        #
+        #         move_to_point(robot, robot.ball_pos_arr[-1])
+        if not robot.flags["predicted"]:
+            robot.ball_predicted_pos = predict_ball_pos(robot, 10)
+            robot.flags["predicted"] = True
+            robot.pos_test = robot.robot_pos_arr[-1]
+        if predicted_dist > 0.16:
+            move_to_point(robot, robot.ball_predicted_pos)
         else:
-            pass
+            if robot.flags["shooting from left"]:
+                if robot.time_step - robot.shoot_start_time <= 3.5:
+                    robot.set_right_vel(4.5)
+                    robot.set_left_vel(10)
+                elif robot.time_step - robot.shoot_start_time <= 10:
+                    robot.set_right_vel(10)
+                    robot.set_left_vel(3)
+                elif robot.time_step - robot.shoot_start_time <= 13:
+                    move_to_point(robot, robot.ball_pos_arr[-1])
+                else:
+                    robot.flags["shooting from left"] = False
+                    robot.shoot_start_time = 0
+                    robot.flags["predicted"] = False
+                    print("current: {}, \nprevious: {}, \ndist: {}".format(
+                        robot.robot_pos_arr[-1],
+                        robot.pos_test,
+                        get_dist(robot.robot_pos_arr[-1], robot.pos_test)
+                    ))
+            elif robot.flags["shooting from right"]:
+                if robot.time_step - robot.shoot_start_time <= 3.5:
+                    robot.set_right_vel(10)
+                    robot.set_left_vel(4.5)
+                elif robot.time_step - robot.shoot_start_time <= 10:
+                    robot.set_right_vel(3)
+                    robot.set_left_vel(10)
+                elif robot.time_step - robot.shoot_start_time <= 13:
+                    move_to_point(robot, robot.ball_pos_arr[-1])
+                else:
+                    robot.flags["shooting from right"] = False
+                    robot.shoot_start_time = 0
+                    robot.flags["predicted"] = False
+                    print("current: {}, \nprevious: {}, \ndist: {}".format(
+                        robot.robot_pos_arr[-1],
+                        robot.pos_test,
+                        get_dist(robot.robot_pos_arr[-1], robot.pos_test)
+                    ))
+            else:
+
+                if abs(robot_ball) > 15:
+                    move_to_point(robot, robot.ball_pos_arr[-1])
+                else:
+                    if robot.flags["shooting from left"]:
+                        robot.flags["shooting from left"] = True
+                        robot.shoot_start_time = robot.time_step
+                    elif robot.flags["shooting from right"]:
+                        robot.flags["shooting from right"] = True
+                        robot.shoot_start_time = robot.time_step
+                    else:
+                        if robot_goal > 0:
+                            robot.flags["shooting from left"] = True
+                            robot.shoot_start_time = robot.time_step
+                        else:
+                            robot.flags["shooting from right"] = True
+                            robot.shoot_start_time = robot.time_step
+
 
 
 def check_ball_dir_robot(robot: RCJSoccerRobot):

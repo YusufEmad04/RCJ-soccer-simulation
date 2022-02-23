@@ -89,6 +89,9 @@ class RCJSoccerRobot:
         self.mimic_flag = False
         self.stuck_timer = 0
         self.stuck_pos = [0, 0]
+        self.shoot_start_time = 0
+        self.ball_predicted_pos = [0, 0]
+        self.pos_test = 0
 
         self.flags = {
             "moving to x": False,
@@ -120,7 +123,10 @@ class RCJSoccerRobot:
             "adjusted heading": False,
             "robot is stuck": False,
             "real ball speed": False,
-            "real robot speed": False
+            "real robot speed": False,
+            "shooting from right": False,
+            "shooting from left": False,
+            "predicted": False
         }
 
         self.start_time = time.time()

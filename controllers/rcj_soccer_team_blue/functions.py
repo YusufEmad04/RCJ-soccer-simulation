@@ -205,66 +205,6 @@ def send_team_data(robot: RCJSoccerRobot, see_ball=True):
         robot.send_data_to_team(robot.player_id, robot.robot_pos_arr[-1], ball_pos, False)
 
 
-def move_to_point_3(robot: RCJSoccerRobot, coord, forward=True):
-    robot_pos = robot.robot_pos_arr[-1]
-    heading = robot.heading
-
-    angle = get_coord_angle(robot_pos, heading, coord)
-
-    if not forward:
-
-        if 0 <= angle <= 180:
-            angle -= 180
-        else:
-            angle += 180
-
-    # checking coordinate is on right
-    if 0 <= angle <= 180:
-
-        # checking if coordinate is in front or behind
-        if 0 <= angle <= 90:
-
-            ratio = 1 - (angle / 90)
-
-        else:
-            ratio = (90 - angle) / 90
-
-        # set each wheel's speed (left is at maximum, right is according to ratio)
-        if forward:
-            robot.set_left_vel(10 * ratio)
-            robot.set_right_vel(10)
-            # robot.set_left_vel(-10)
-            # robot.set_right_vel(-10 * ratio)
-        else:
-            robot.set_left_vel(-10)
-            robot.set_right_vel(-10 * ratio)
-            # robot.set_right_vel(10)
-            # robot.set_left_vel(10 * ratio)
-
-    # checking coordinate is on left
-    elif -180 <= angle < 0:
-
-        # checking if coordinate is in front or behind
-        if -90 <= angle < 0:
-
-            ratio = 1 + (angle / 90)
-
-        else:
-            ratio = (angle + 90) / 90
-
-        # set each wheel's speed (right is at maximum, left is according to ratio)
-        if forward:
-            robot.set_left_vel(10)
-            robot.set_right_vel(10 * ratio)
-            # robot.set_left_vel(-10 * ratio)
-            # robot.set_right_vel(-10)
-        else:
-            robot.set_left_vel(-10 * ratio)
-            robot.set_right_vel(-10)
-            # robot.set_right_vel(10 * ratio)
-            # robot.set_left_vel(10)
-
-
 def move_to_point2(robot: RCJSoccerRobot, coord, forward=True, s=10):
     robot_pos = robot.robot_pos_arr[-1]
     heading = robot.heading
@@ -359,13 +299,6 @@ def move_to_point(robot: RCJSoccerRobot, coord, forward=True, s=10):
             robot.set_right_vel(-s)
             # robot.set_right_vel(10 * ratio)
             # robot.set_left_vel(10)
-
-
-def move_to_direction(robot: RCJSoccerRobot, direction, forward=True):
-    if forward:
-        pass
-    else:
-        pass
 
 
 def adjust_heading(robot: RCJSoccerRobot, obj):
@@ -910,80 +843,6 @@ def defend_strategy_5(robot: RCJSoccerRobot, predicted_pos=None, was_interceptin
         move_to_point2(robot, robot.ball_intercept_pos, False)
 
 
-def mimic(robot: RCJSoccerRobot):
-    # Get coord corresponding to ball on our line and go to point
-    coord = [0.3, robot.ball_pos_arr[-1][1]]
-    angle = get_coord_angle(robot.robot_pos_arr[-1], robot.heading, coord)
-    if -90 <= angle <= 90:
-        forward = True
-    else:
-        forward = False
-    if 10 >= time.time() - robot.mimic_timer >= 6:
-        if get_dist(robot.robot_pos_arr[-1], robot.mimic_stuck_pos) <= 0.1:
-            print("mimic stuck")
-            robot.mimic_stuck = True
-        else:
-            print("mimic reset")
-            robot.mimic_timer = 0
-            robot.mimic_stuck_pos = [0, 0]
-            robot.mimic_flag = False
-            robot.mimic_stuck = False
-    if robot.mimic_stuck:
-        move_to_point(robot, robot.ball_pos_arr[-1])
-    else:
-        if (coord[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= coord[0] + 0.025) and (
-                coord[1] - 0.025 <= robot.robot_pos_arr[-1][1] <= coord[1] + 0.025):
-            robot.set_right_vel(0)
-            robot.set_left_vel(0)
-            if not robot.mimic_flag:
-                robot.mimic_timer = time.time()
-                robot.mimic_stuck_pos = robot.robot_pos_arr[-1]
-                print("Stuck pos", robot.mimic_stuck_pos)
-                robot.mimic_flag = True
-        elif forward:
-            robot.set_right_vel(10)
-            robot.set_left_vel(10)
-        else:
-            robot.set_right_vel(-10)
-            robot.set_left_vel(-10)
-
-
-def defend_strategy_mimic(robot: RCJSoccerRobot):
-    # TODO Mimic and timer
-    # Only set mimic coordinate once and then head to it
-    if not robot.flags["going to mimicPos"]:
-        robot.mimic_coord = [0.3, robot.robot_pos_arr[-1][1]]
-    if robot.ball_pos_arr:
-        # Check if arrived at position to start mimic
-        if not robot.flags["arrived at mimicPos"]:
-            # if Arrived set flag, else head there
-            if (robot.mimic_coord[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= robot.mimic_coord[0] + 0.025) and (
-                    robot.mimic_coord[1] - 0.025 <= robot.robot_pos_arr[-1][1] <= robot.mimic_coord[1] + 0.025):
-                robot.flags["arrived at mimicPos"] = True
-            else:
-                move_to_point(robot, robot.mimic_coord)
-                robot.flags["going to mimicPos"] = True
-        else:
-            # Adjust angle to start mimic
-            if 87 <= robot.heading <= 92 or -92 <= robot.heading <= -87:
-                # Start mimicking ball
-                mimic(robot)
-            elif robot.heading >= 0:
-                print("Adjusting heading")
-                adjust_heading_to_angle(robot, 90, s=4)
-            else:
-                print("Adjusting heading")
-                adjust_heading_to_angle(robot, -90, s=4)
-
-
-def call_mimic(robot: RCJSoccerRobot):
-    defend_strategy_mimic(robot)
-    if (robot.flags["arrived at mimicPos"]) and not (
-            robot.mimic_coord[0] - 0.025 <= robot.robot_pos_arr[-1][0] <= robot.mimic_coord[0] + 0.025):
-        robot.flags["arrived at mimicPos"] = False
-        robot.flags["going to mimicPos"] = False
-
-
 def predict_ball_pos(robot: RCJSoccerRobot, t):
     # get distance moved on hyp side then get new x and y
 
@@ -1377,40 +1236,7 @@ def check_for_real_robot_speed(robot: RCJSoccerRobot, speed):
         robot.temp_robot_speeds.append(speed)
 
 
-def handle_ball(robot: RCJSoccerRobot):
-    robot_ball_dist = get_dist(robot.robot_pos_arr[-1], robot.ball_pos_arr[-1])
-    ball_speed = get_ball_speed(robot)[0]
-
-    if robot_ball_dist > 0.08:
-        # robot.set_right_vel(10)
-        # robot.set_left_vel(10)
-        move_to_point(robot, robot.ball_pos_arr[-1])
-
-    else:
-        if ball_speed >= 2.55:
-            # robot.set_right_vel(10)
-            # robot.set_left_vel(10)
-            move_to_point(robot, robot.ball_pos_arr[-1])
-        elif ball_speed >= 1.7:
-            motors_speed = ball_speed * 10 / 2.55
-            # robot.set_right_vel(motors_speed)
-            # robot.set_left_vel(motors_speed)
-            move_to_point(robot, robot.ball_pos_arr[-1], s=motors_speed)
-        else:
-            # robot.set_right_vel(6)
-            # robot.set_left_vel(6)
-            move_to_point(robot, robot.ball_pos_arr[-1], s=6)
-
-    # if robot_ball_dist < 0.085:
-    #     robot.set_right_vel(5.75)
-    #     robot.set_left_vel(5.75)
-    # else:
-    #     motors_speed = ball_speed * 10 / 2.55
-    #     robot.set_right_vel(motors_speed)
-    #     robot.set_left_vel(motors_speed)
-
-
-def handle2(robot: RCJSoccerRobot):
+def handle(robot: RCJSoccerRobot):
     ball_data = get_ball_speed(robot)
     dist = get_dist(ball_data[2], robot.robot_pos_arr[-1])
     robot_goal = get_coord_angle(robot.robot_pos_arr[-1], robot.heading, [-0.729, 0])
@@ -1422,46 +1248,6 @@ def handle2(robot: RCJSoccerRobot):
     if dist > 0.16:
         move_to_point(robot, robot.ball_pos_arr[-1])
     else:
-        # if robot.flags["shooting from right"]:
-        #     if robot.time_step - robot.shoot_start_time <= 3.5:
-        #         robot.set_right_vel(10)
-        #         robot.set_left_vel(4.5)
-        #     elif robot.time_step - robot.shoot_start_time <= 10:
-        #         robot.set_right_vel(3)
-        #         robot.set_left_vel(10)
-        #     elif robot.time_step - robot.shoot_start_time <= 13:
-        #         move_to_point(robot, robot.ball_pos_arr[-1])
-        #     else:
-        #         robot.flags["shooting from right"] = False
-        #         robot.shoot_start_time = 0
-        # elif robot.flags["shooting from left"]:
-        #     if robot.time_step - robot.shoot_start_time <= 3.5:
-        #         robot.set_right_vel(4.5)
-        #         robot.set_left_vel(10)
-        #     elif robot.time_step - robot.shoot_start_time <= 10:
-        #         robot.set_right_vel(10)
-        #         robot.set_left_vel(3)
-        #     elif robot.time_step - robot.shoot_start_time <= 13:
-        #         move_to_point(robot, robot.ball_pos_arr[-1])
-        #     else:
-        #         robot.flags["shooting from left"] = False
-        #         robot.shoot_start_time = 0
-        # else:
-        #     if diff > 5:
-        #         # right left
-        #         robot.flags["shooting from right"] = True
-        #         robot.shoot_start_time = robot.time_step
-        #     elif diff < -5:
-        #         # left right
-        #         robot.flags["shooting from left"] = True
-        #         robot.shoot_start_time = robot.time_step
-        #     else:
-        #         # match speed
-        #         motors_speed = ball_data[0] * 10 / 2.55
-        #         if motors_speed > 10:
-        #             motors_speed = 10
-        #
-        #         move_to_point(robot, robot.ball_pos_arr[-1])
         if not robot.flags["predicted"]:
             robot.ball_predicted_pos = predict_ball_pos(robot, 10)
             robot.flags["predicted"] = True
@@ -1525,7 +1311,6 @@ def handle2(robot: RCJSoccerRobot):
                             robot.shoot_start_time = robot.time_step
 
 
-
 def check_ball_dir_robot(robot: RCJSoccerRobot):
     if len(robot.ball_pos_arr) > 2:
         first_pos = robot.ball_pos_arr[0]
@@ -1552,7 +1337,7 @@ def adjust_robot_stuck_timer(robot: RCJSoccerRobot):
                 robot.stuck_pos = [0, 0]
 
 
-def mimic2(robot: RCJSoccerRobot):
+def mimic(robot: RCJSoccerRobot):
     if robot.flags["robot is stuck"] and (15 >= time.time() - robot.stuck_timer >= 10):
         move_to_point(robot, robot.ball_pos_arr[-1])
     else:

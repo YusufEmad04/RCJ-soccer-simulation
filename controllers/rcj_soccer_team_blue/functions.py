@@ -478,13 +478,14 @@ def defend(robot: RCJSoccerRobot):
 def check_ball_status(robot: RCJSoccerRobot):
     """
     return conditions:
-    ball is being shot - (1)
-    ball with other team in our half - (2)
-    ball with us - (3)
-    no ball data - (4)
+    ball is being shot at us - (1)
+    ball is being shot at enemy - (2)
+    ball with other team in our half - (3)
+    ball with us - (4)
+    no ball data - (5)
     """
 
-    conditions = [1, 2, 3, 4]
+    conditions = [1, 2, 3, 4, 5]
 
     ball_speed = get_ball_speed(robot)
 
@@ -499,6 +500,11 @@ def check_ball_status(robot: RCJSoccerRobot):
     boundary_angles = [
         get_coord_angle(ball_pos, 0, (0.72, 0.35)),
         get_coord_angle(ball_pos, 0, (0.72, -0.35))
+    ]
+
+    boundary_angles2 = [
+        get_coord_angle(ball_pos, 180, (-0.72, 0.35)),
+        get_coord_angle(ball_pos, 180, (-0.72, -0.35))
     ]
 
     # check if ball is being shot towards the goal and in our half

@@ -170,11 +170,23 @@ class RCJSoccerRobot:
         """
         compass_values = self.compass.getValues()
 
-        # Subtract math.pi/2 (90) so that the heading 0 means that
-        # robot is facing opponent's goal
-        rad = math.atan2(compass_values[0], compass_values[1]) - (math.pi / 2)
+        # Add math.pi/2 (90) so that the heading 0 is facing opponent's goal
+        rad = math.atan2(compass_values[0], compass_values[1]) + (math.pi / 2)
         if rad < -math.pi:
             rad = rad + (2 * math.pi)
+
+        rad = rad * 180 / math.pi * -1
+
+        if self.team == "Y":
+            if rad > 180:
+                rad -= 180
+            else:
+                rad += 180
+
+        if rad > 0:
+            rad -= 180
+        else:
+            rad += 180
 
         return rad
 

@@ -262,6 +262,10 @@ class RCJSoccerRobot:
             List containing x and y values
         """
         gps_values = self.gps.getValues()
+
+        if self.team == "Y":
+            return [gps_values[1]*-1, gps_values[0]*-1]
+
         return [gps_values[1], gps_values[0]]
 
     def get_compass_heading(self) -> float:
@@ -278,6 +282,12 @@ class RCJSoccerRobot:
             rad = rad + (2 * math.pi)
 
         rad = rad * 180 / math.pi * -1
+
+        if self.team == "Y":
+            if rad > 180:
+                rad -= 180
+            else:
+                rad += 180
 
         if rad > 0:
             rad -= 180

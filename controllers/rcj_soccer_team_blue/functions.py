@@ -480,20 +480,27 @@ def check_ball_status(robot: RCJSoccerRobot):
     return conditions:
     ball is being shot at us - (1)
     ball is being shot at enemy - (2)
-    ball with other team in our half - (3)
-    ball with us - (4)
-    no ball data - (5)
+    corner - (3)
+    defence - (4)
+    attack - (5)
+    no ball data - (6)
     """
 
-    conditions = [1, 2, 3, 4, 5]
+    conditions = [1, 2, 3, 4, 5, 6]
 
     ball_speed = get_ball_speed(robot)
 
     # check if there is ball data
     if not ball_speed:
-        return conditions[3]
+        return conditions[5]
 
     ball_angle = ball_speed[1]
+    if ball_angle > 0:
+        ball_angle2 = ball_angle - 180
+    else:
+        ball_angle2 = ball_angle + 180
+
+    print(ball_angle2)
     ball_pos = ball_speed[2]
 
     # angle from goal to two sides of the goal
@@ -510,8 +517,14 @@ def check_ball_status(robot: RCJSoccerRobot):
     # check if ball is being shot towards the goal and in our half
     if (min(boundary_angles) <= ball_angle <= max(boundary_angles)) and (ball_speed[0] > 2) and (ball_pos[0] > 0):
         return conditions[0]
-    else:
+    elif (min(boundary_angles2) <= ball_angle2 <= max(boundary_angles2)) and (ball_speed[0] > 2) and (ball_pos[0] < 0):
+        return conditions[1]
+    elif ball_pos[0] > 0.45 and abs(ball_pos[1]) > 0.29:
         return conditions[2]
+    elif ball_pos[0] > 0:
+        return conditions[3]
+    else:
+        return conditions[4]
 
 
 def check_strategy(robot: RCJSoccerRobot):

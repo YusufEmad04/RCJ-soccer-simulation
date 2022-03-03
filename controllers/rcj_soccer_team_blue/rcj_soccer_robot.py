@@ -1,6 +1,5 @@
 import math
 import struct
-import time
 
 TIME_STEP = 64
 ROBOT_NAMES = ["B1", "B2", "B3", "Y1", "Y2", "Y3"]
@@ -48,34 +47,6 @@ class RCJSoccerRobot:
         self.left_motor.setVelocity(0.0)
         self.right_motor.setVelocity(0.0)
 
-        self.heading = 0
-        self.ultrasonic_data = dict()
-        self.team_data = dict()
-
-        self.time_step = 0
-        self.ball_pos_arr = []
-        self.robot_pos_arr = []
-        self.time_steps_arr = []
-
-        self.moving_to_x = False
-        self.moving_to_y = False
-        self.moving_to_z = True
-        self.moving_forward = False
-        self.moving_backward = False
-        self.intercepting_ball = [False, 0]
-        self.strategy_4_data = {"forward": True, "function": 1}
-        self.ball_intercept_pos = None
-        self.ball_intercept_direction = 0
-        self.initial_ball_pos = 0
-        self.predicting = False
-
-        self.wanted_time = 0
-        self.after_time = 0
-        self.predicted_ball_pos = [0, 0]
-        self.ball_predict = False
-
-        self.start_time = time.time()
-
     def parse_supervisor_msg(self, packet: str) -> dict:
         """Parse message received from supervisor
 
@@ -118,20 +89,11 @@ class RCJSoccerRobot:
         Returns:
             dict: Parsed message stored in dictionary.
         """
-        struct_fmt = 'iffff?'
+        struct_fmt = "i"
         unpacked = struct.unpack(struct_fmt, packet)
-
         data = {
-            'robot_id': unpacked[0],
-            'robot_pos': [unpacked[1], unpacked[2]],
-            'ball_pos': [unpacked[3], unpacked[4]],
-            'see the ball': unpacked[5]
-
+            "robot_id": unpacked[0],
         }
-
-        if round(unpacked[3], 0) == -2:
-            data["ball_pos"] = None
-
         return data
 
     def get_new_team_data(self) -> dict:
@@ -152,14 +114,14 @@ class RCJSoccerRobot:
         """
         return self.team_receiver.getQueueLength() > 0
 
-    def send_data_to_team(self, robot_id, robot_pos, ball_pos, see_ball) -> None:
+    def send_data_to_team(self, robot_id) -> None:
         """Send data to the team
 
         Args:
              robot_id (int): ID of the robot
         """
-        struct_fmt = 'iffff?'
-        data = [robot_id, *robot_pos, *ball_pos, see_ball]
+        struct_fmt = "i"
+        data = [robot_id]
         packet = struct.pack(struct_fmt, *data)
         self.team_emitter.send(packet)
 
@@ -199,7 +161,7 @@ class RCJSoccerRobot:
             List containing x and y values
         """
         gps_values = self.gps.getValues()
-        return [gps_values[1], gps_values[0]]
+        return [gps_values[0], gps_values[1]]
 
     def get_compass_heading(self) -> float:
         """Get compass heading in radians
@@ -213,13 +175,6 @@ class RCJSoccerRobot:
         rad = math.atan2(compass_values[0], compass_values[1]) + (math.pi / 2)
         if rad < -math.pi:
             rad = rad + (2 * math.pi)
-
-        rad = rad * 180 / math.pi * -1
-
-        if rad > 0:
-            rad -= 180
-        else:
-            rad += 180
 
         return rad
 

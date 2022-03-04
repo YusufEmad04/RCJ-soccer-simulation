@@ -59,8 +59,22 @@ class RCJSoccerRobot:
         self.temp_ball_speeds = []
         self.temp_robot_speeds = []
         self.dist_arr = []
+        self.ball_status_arr = [0, 0]
         self.right_wheel_vel = 0
         self.left_wheel_vel = 0
+        self.predicted_intercept_time = -1
+
+        self.goal = [(0.72, 0.35), (0.72, 0), (0.72, -0.35)]
+        self.enemy_goal = [(-0.72, 0.35), (-0.72, 0), (-0.72, -0.35)]
+
+        """
+        1. intercept
+        2. defend
+        3. corner
+        4. ball handle (Ball follower)
+        5. Mimic
+        """
+        self.roles = [3, 3, 3]
 
         self.moving_to_x = False
         self.moving_to_y = False
@@ -72,7 +86,6 @@ class RCJSoccerRobot:
         self.ball_intercept_pos = None
         self.ball_intercept_direction = 0
         self.initial_ball_pos = 0
-        self.predicting = False
         self.arrived = False
         self.timer = 0
         self.stuck = False
@@ -118,15 +131,13 @@ class RCJSoccerRobot:
             "last ball pos": [0, 0],
             "real speed": False,
             "ball getting closer": False,
-            "arrived at mimicPos": False,
-            "going to mimicPos": False,
             "adjusted heading": False,
             "robot is stuck": False,
             "real ball speed": False,
             "real robot speed": False,
             "shooting from right": False,
             "shooting from left": False,
-            "predicted": False
+            "predicted": False,
         }
 
         self.start_time = time.time()
@@ -181,14 +192,17 @@ class RCJSoccerRobot:
         Returns:
             dict: Parsed message stored in dictionary.
         """
-        struct_fmt = 'iffff?'
+        struct_fmt = 'iffff?fii'
         unpacked = struct.unpack(struct_fmt, packet)
 
         data = {
             'robot_id': unpacked[0],
             'robot_pos': [unpacked[1], unpacked[2]],
             'ball_pos': [unpacked[3], unpacked[4]],
-            'see the ball': unpacked[5]
+            'see the ball': unpacked[5],
+            'predicted intercept time': unpacked[6],
+            'robot 2 role': unpacked[7],
+            'robot 3 role': unpacked[8]
 
         }
 
@@ -215,14 +229,14 @@ class RCJSoccerRobot:
         """
         return self.team_receiver.getQueueLength() > 0
 
-    def send_data_to_team(self, robot_id, robot_pos, ball_pos, see_ball) -> None:
+    def send_data_to_team(self, robot_id, robot_pos, ball_pos, see_ball, predicted_time, r2, r3) -> None:
         """Send data to the team
 
         Args:
              robot_id (int): ID of the robot
         """
-        struct_fmt = 'iffff?'
-        data = [robot_id, *robot_pos, *ball_pos, see_ball]
+        struct_fmt = 'iffff?fii'
+        data = [robot_id, *robot_pos, *ball_pos, see_ball, predicted_time, r2, r3]
         packet = struct.pack(struct_fmt, *data)
         self.team_emitter.send(packet)
 

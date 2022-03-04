@@ -19,6 +19,7 @@ class MyRobot3(RCJSoccerRobot):
 
                 # receive and print data (team + supervisor)
                 data = receive_data(self)
+                assign_role(self)
 
                 # check if there is data from (ball receiver)
                 if self.is_new_ball_data():

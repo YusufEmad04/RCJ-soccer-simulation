@@ -59,7 +59,8 @@ class RCJSoccerRobot:
         self.temp_ball_speeds = []
         self.temp_robot_speeds = []
         self.dist_arr = []
-        self.ball_status_arr = [0, 0]
+        self.ball_status_arr = []
+        self.ball_status = 0
         self.right_wheel_vel = 0
         self.left_wheel_vel = 0
         self.predicted_intercept_time = -1

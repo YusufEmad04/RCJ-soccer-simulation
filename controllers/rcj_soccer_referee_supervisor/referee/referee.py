@@ -242,7 +242,7 @@ class RCJSoccerReferee:
                 )
                 if furthest_spots:
                     neutral_spot = furthest_spots[0][0]
-                    self.sv.move_object_to_neutral_spot(robot, neutral_spot)
+                    # self.sv.move_object_to_neutral_spot(robot, neutral_spot)
                     self.reset_checkers(robot)
 
     def check_progress(self):
@@ -279,7 +279,7 @@ class RCJSoccerReferee:
                             :LACK_OF_PROGRESS_NUMBER_OF_NEUTRAL_SPOTS
                         ],
                     )
-                    self.sv.move_object_to_neutral_spot(robot, neutral_spot[0])
+                    # self.sv.move_object_to_neutral_spot(robot, neutral_spot[0])
 
                 self.reset_checkers(robot)
 
@@ -305,7 +305,7 @@ class RCJSoccerReferee:
                     ],  # noqa
                 )
 
-                self.sv.move_object_to_neutral_spot("ball", neutral_spot[0])
+                # self.sv.move_object_to_neutral_spot("ball", neutral_spot[0])
                 self.ball_stop = 2
 
             self.reset_checkers("ball")

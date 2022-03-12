@@ -65,7 +65,7 @@ class RCJSoccerRobot:
         self.left_wheel_vel = 0
         self.predicted_intercept_time = -1
 
-        self.goal = [(0.72, 0.35), (0.72, 0), (0.72, -0.35)]
+        self.goal = [(0.71, 0.21), (0.72, 0), (0.71, -0.21)]
         self.enemy_goal = [(-0.72, 0.35), (-0.72, 0), (-0.72, -0.35)]
 
         """
@@ -106,6 +106,7 @@ class RCJSoccerRobot:
         self.shoot_start_time = 0
         self.ball_predicted_pos = [0, 0]
         self.pos_test = 0
+        self.corner_push_timer = 0
 
         self.flags = {
             "moving to x": False,
@@ -139,6 +140,7 @@ class RCJSoccerRobot:
             "shooting from right": False,
             "shooting from left": False,
             "predicted": False,
+            "arrived at corner": False
         }
 
         self.start_time = time.time()

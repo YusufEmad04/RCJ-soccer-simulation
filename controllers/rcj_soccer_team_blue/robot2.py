@@ -18,20 +18,20 @@ class MyRobot2(RCJSoccerRobot):
 
                 # receive and print data (team + supervisor)
                 data = receive_data(self)
-                assign_role(self)
-                if self.roles[1] == 1:
-                    if self.flags["intercepting ball"][0]:
-                        defend_strategy_2(self)
-                    else:
-                        defend_strategy_2(self, False)
-                elif self.roles[1] == 2:
-                    defend_mimic_at_goal(self)
-                elif self.roles[1] == 4:
-                    if self.ball_pos_arr:
-                        move_to_point(self, self.ball_pos_arr[-1])
-                else:
-                    self.set_left_vel(0)
-                    self.set_right_vel(0)
+                # assign_role(self)
+                # if self.roles[1] == 1:
+                #     if self.flags["intercepting ball"][0]:
+                #         defend_strategy_2(self)
+                #     else:
+                #         defend_strategy_2(self, False)
+                # elif self.roles[1] == 2:
+                #     defend_mimic_at_goal(self)
+                # elif self.roles[1] == 4:
+                #     if self.ball_pos_arr:
+                #         move_to_point(self, self.ball_pos_arr[-1])
+                # else:
+                #     self.set_left_vel(0)
+                #     self.set_right_vel(0)
                 # print("robot 2: {}".format(self.roles[1]))
 
                 # check if there is data from (ball receiver)

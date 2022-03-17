@@ -19,30 +19,8 @@ class MyRobot3(RCJSoccerRobot):
 
                 # receive and print data (team + supervisor)
                 data = receive_data(self)
-                # assign_role(self)
-                # if self.roles[2] == 1:
-                #     if self.flags["intercepting ball"][0]:
-                #         defend_strategy_2(self)
-                #     else:
-                #         defend_strategy_2(self, False)
-                # elif self.roles[2] == 2:
-                #     if self.flags["intercepting ball"][0]:
-                #         defend_strategy_2(self)
-                #     else:
-                #         defend_strategy_2(self, False)
-                #     # defend_mimic_at_goal(self)
-                # elif self.roles[2] == 4:
-                #     if self.ball_pos_arr:
-                #         move_to_point(self, self.ball_pos_arr[-1])
-                # else:
-                #     # self.set_left_vel(0)
-                #     # self.set_right_vel(0)
-                #     if self.ball_pos_arr:
-                #         mimic(self)
-                #     else:
-                #         self.set_left_vel(0)
-                #         self.set_right_vel(0)
-                #
+                # print("id: {}, {}".format(self.player_id,self.team_data))
+                # check_strategy(self)
                 # print("robot 3: {}".format(self.roles[2]))
                 # self.set_left_vel(7.3)
                 # self.set_right_vel(7.3)
@@ -53,6 +31,13 @@ class MyRobot3(RCJSoccerRobot):
 
                     # data from the ball receiver (ball receiver)
                     ball_data = receive_ball_data(self)
+                    # print("speed: {}, dir: {}".format(*get_ball_speed(self)[:2]))
+                    #
+                    # if self.flags["intercepting ball"][0]:
+                    #     defend_strategy_2(self)
+                    # else:
+                    #     defend_strategy_2(self, False)
+
 
                     # move_to_point(self, ball_data["ball position"])
 

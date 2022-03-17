@@ -1,6 +1,7 @@
 # rcj_soccer_player controller - ROBOT B3
 # Feel free to import built-in libraries
 # You can also import scripts that you put into the folder with controller
+import time
 
 from functions import *
 from rcj_soccer_robot import RCJSoccerRobot, TIME_STEP
@@ -17,21 +18,15 @@ class MyRobot1(RCJSoccerRobot):
 
                 # receive and print data (team + supervisor)
                 data = receive_data(self)
-                assign_role(self)
-                # if self.roles[0] == 1:
-                #     if self.flags["intercepting ball"][0]:
-                #         defend_strategy_2(self)
-                #     else:
-                #         defend_strategy_2(self, False)
-                # elif self.roles[0] == 2:
-                #     defend_mimic_at_goal(self)
-                # elif self.roles[0] == 4:
-                #     if self.ball_pos_arr:
-                #         move_to_point(self, self.ball_pos_arr[-1])
-                # else:
-                #     self.set_left_vel(0)
-                #     self.set_right_vel(0)
+                # print("id: {}, {}".format(self.player_id,self.team_data))
+                # check_strategy(self)
                 # print("robot 1: {}".format(self.roles[0]))
+
+                adjust_robot_penalty_time(self)
+                print("robot in penalty area: {}".format(self.flags["robot in penalty area"]))
+                print("outside timer: {}".format(time.time() - self.outside_timer))
+                print("penalty area timer: {}".format(time.time() - self.penalty_area_timer))
+
 
                 # check if there is data from (ball receiver)
                 if self.is_new_ball_data():

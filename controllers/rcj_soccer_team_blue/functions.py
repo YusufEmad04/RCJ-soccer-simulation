@@ -81,6 +81,7 @@ def receive_data(robot: RCJSoccerRobot):
 
     # data from the supervisor (supervisor receiver)
     data = robot.get_new_data()
+    robot.flags["waiting_for_kickoff"] = data["waiting_for_kickoff"]
 
     # get ultrasonic values
     ultrasonic = robot.get_sonar_values()
@@ -97,6 +98,9 @@ def receive_data(robot: RCJSoccerRobot):
         "right": (ultrasonic_right[0], ultrasonic_right[1]),
         "left": (ultrasonic_left[0], ultrasonic_left[1]),
     }
+
+    robot.ultrasonic_arr = sorted([(i, get_dist(ultrasonic_val[i], robot.robot_pos_arr[-1])) for i in ultrasonic_val],
+                                  key=lambda x: x[1])
 
     # check if there is data from (team receiver)
     # while loop to empty queue
@@ -134,6 +138,7 @@ def receive_data(robot: RCJSoccerRobot):
         "team data": team_d
 
     }
+    adjust_robot_stuck_timer(robot)
 
     return d
 
@@ -180,6 +185,8 @@ def receive_ball_data(robot: RCJSoccerRobot):
         "ball position": ball_pos
     }
 
+    check_for_relocation_data(robot)
+
     return d
 
 
@@ -204,6 +211,8 @@ def get_team_ball_data(robot: RCJSoccerRobot):
         check_for_real_ball_speed(robot, get_ball_speed(robot)[0])
     else:
         clear_ball_data(robot)
+
+    check_for_relocation_data(robot)
 
 
 def send_team_data(robot: RCJSoccerRobot, see_ball=True):
@@ -263,6 +272,11 @@ def move_to_point(robot: RCJSoccerRobot, coord, forward=True, s=10):
     heading = robot.heading
 
     angle = get_coord_angle(robot_pos, heading, coord)
+
+    if abs(angle) > 90:
+        forward = False
+    else:
+        forward = True
 
     if not forward:
 
@@ -391,8 +405,6 @@ def get_robot_speed(robot: RCJSoccerRobot):
 def increment_step(robot: RCJSoccerRobot):
     robot.time_step += 0.5
     add_to_arr(robot.time_steps_arr, robot.time_step)
-    check_for_relocation_data(robot)
-    adjust_robot_stuck_timer(robot)
 
 
 def clear_ball_data(robot: RCJSoccerRobot):
@@ -474,26 +486,6 @@ def intercept_ball(robot: RCJSoccerRobot):
         robot.set_left_vel(0)
 
 
-def defend(robot: RCJSoccerRobot):
-    # if check_ball_status(robot) == 1:
-    #     print("shoot")
-    #     predicted_pos = predict_ball_pos(robot, 14)
-    #     move_to_point(robot, predicted_pos)
-    # elif check_ball_status(robot) == 2:
-    #     print(".")
-    # elif check_ball_status(robot) == 3 or 4:
-    #
-    #     defend_strategy_1(robot)
-    #     # defend_strategy_3(robot,see_ball,heading,team_data)
-    #
-    # elif check_ball_status(robot) == 4:
-    #
-    #     robot.set_right_vel(-10)
-    #     robot.set_left_vel(-10)
-
-    check_strategy(robot)
-
-
 def check_ball_status(robot: RCJSoccerRobot):
     """
     return conditions:
@@ -539,7 +531,7 @@ def check_ball_status(robot: RCJSoccerRobot):
     elif (min(boundary_angles2) <= ball_angle2 <= max(boundary_angles2)) and (ball_speed[0] > 1.75) and (
             ball_pos[0] < 0):
         add_to_arr(robot.ball_status_arr, conditions[1])
-    elif ball_pos[0] > 0.45 and abs(ball_pos[1]) > 0.29:
+    elif ball_pos[0] > 0.45 and abs(ball_pos[1]) > 0.20:
         add_to_arr(robot.ball_status_arr, conditions[2])
     elif ball_pos[0] > 0:
         add_to_arr(robot.ball_status_arr, conditions[3])
@@ -551,9 +543,9 @@ def get_real_ball_status(robot: RCJSoccerRobot):
     check_ball_status(robot)
 
     if len(robot.ball_status_arr) > 2:
-        if robot.ball_status_arr[0] == robot.ball_status_arr[1] == robot.ball_status_arr[2]:
-            if robot.ball_status != robot.ball_status_arr[-1] and robot.player_id == 1 and robot.ball_status_arr[
-                -1] != 6:
+        if (robot.ball_status_arr[0] == robot.ball_status_arr[1] == robot.ball_status_arr[2]) or robot.ball_status_arr[
+            -1] == 6:
+            if robot.ball_status != robot.ball_status_arr[-1]:
                 reset(robot)
             robot.ball_status = robot.ball_status_arr[-1]
     else:
@@ -566,18 +558,24 @@ def reset(robot: RCJSoccerRobot):
     robot.flags["predicted"] = False
     # Mimic
     robot.flags["adjusted heading"] = False
+    # Corner
+    robot.flags["arrived at corner"] = False
 
 
 def go_to_corner(robot: RCJSoccerRobot):
     ball_data = get_ball_speed(robot)
     ball_pos = ball_data[2]
     rb_dist = get_dist(robot.robot_pos_arr[-1], ball_pos)
+    # print()
     if rb_dist <= 0.09 and robot.flags["arrived at corner"]:
-        move_to_point(robot, ball_pos)
+        if abs(get_coord_angle(robot.robot_pos_arr[-1], robot.heading, ball_pos)) < 90:
+            move_to_point(robot, ball_pos)
+        else:
+            move_to_point(robot, ball_pos, False)
     elif ball_pos[1] > 0:
         corner = robot.goal[0]
         if get_dist(robot.robot_pos_arr[-1], corner) > 1:
-            robot.flags["adjusted heading"] = False
+            robot.flags["arrived at corner"] = False
 
         if (corner[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= corner[0] + 0.04) and (
                 corner[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= corner[1] + 0.04):
@@ -593,7 +591,7 @@ def go_to_corner(robot: RCJSoccerRobot):
     else:
         corner = robot.goal[2]
         if get_dist(robot.robot_pos_arr[-1], corner) > 1:
-            robot.flags["adjusted heading"] = False
+            robot.flags["arrived at corner"] = False
 
         if (corner[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= corner[0] + 0.04) and (
                 corner[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= corner[1] + 0.04):
@@ -608,42 +606,55 @@ def go_to_corner(robot: RCJSoccerRobot):
 
 def check_strategy(robot: RCJSoccerRobot):
     # check if robot is currently intercepting the ball
-    get_real_ball_status(robot)
-    ball_status = robot.ball_status
-
-    if robot.flags["intercepting ball"][0]:
-        # if robot was already intercepting the ball
-        # print("intercepting at {},   dir {}".format(robot.ball_intercept_pos, robot.ball_intercept_direction))
-
-        # check which strategy the robot was intercepting from
-        strategies = [defend_strategy_2, None, defend_strategy_4]
-
-        # call the strategy
-        strategies[robot.flags["intercepting ball"][1] - 2](robot)
+    if robot.player_id == 3 and robot.time_step < 7 and robot.ball_pos_arr:
+        move_to_point(robot, robot.ball_pos_arr[-1])
     else:
-
-        # check if ball status
-        if ball_status != 4 and ball_status != 1:
-
-            # go forward and backward
-            # print("normal")
-            defend_strategy_1(robot)
+        assign_role(robot)
+        role = robot.roles[robot.player_id - 1]
+        if get_dist(robot.robot_pos_arr[0], robot.robot_pos_arr[-1]) > 1:
+            robot.set_left_vel(0)
+            robot.set_right_vel(0)
+        elif not (robot.flags["waiting_for_kickoff"]):
+            if not (robot.flags["robot is stuck"] and (15 >= time.time() - robot.stuck_timer >= 10)):
+                # if not robot.stuck:
+                if role == 1:
+                    if robot.flags["intercepting ball"][0]:
+                        defend_strategy_2(robot)
+                    else:
+                        defend_strategy_2(robot, False)
+                elif role == 2:
+                    if not (robot.ball_status == 6):
+                        defend_mimic_at_goal(robot)
+                    else:
+                        pass
+                elif role == 3:
+                    if robot.ball_pos_arr:
+                        go_to_corner(robot)
+                elif role == 4:
+                    if robot.ball_pos_arr:
+                        move_to_point(robot, robot.ball_pos_arr[-1])
+                elif role == 5:
+                    mimic(robot)
+                elif role == 6:
+                    move_to_point(robot, robot.goal[0])
+                elif role == 7:
+                    move_to_point(robot, robot.goal[2])
+                elif role == 8:
+                    shoot(robot)
+                else:
+                    robot.set_left_vel(0)
+                    robot.set_right_vel(0)
+                # else:
+                #     shoot(robot)
+            else:
+                print("robot is stuck")
+                if robot.ball_pos_arr:
+                    move_to_point(robot, robot.ball_pos_arr[-1])
+                else:
+                    move_to_point(robot, robot.ultrasonic_data[robot.ultrasonic_arr[-1][0]])
         else:
-
-            # robot should intercept the ball
-
-            pos = predict_ball_pos(robot, 18)
-
-            # if (robot.robot_pos_arr[-1][0] - 0.1 <= robot.ball_pos_arr[-1][0]) and robot.ball_pos_arr[-1][0] > 0.6:
-            #     # go to either sides of the goal
-            #     defend_strategy_4(robot, False)
-            # elif pos[0] > 0.7:
-            #     defend_strategy_5(robot, pos, False)
-            # else:
-
-            # intercept the ball
-            print("going to intercept")
-            defend_strategy_2(robot, False)
+            robot.set_left_vel(0)
+            robot.set_right_vel(0)
 
 
 def defend_mimic_at_goal(robot: RCJSoccerRobot):
@@ -654,13 +665,27 @@ def defend_mimic_at_goal(robot: RCJSoccerRobot):
     # if get_dist(robot.robot_pos_arr[-1], [0.725, 0]) > 0.1 and abs(robot.robot_pos_arr[-1][0] - 0.725) > 0.1:
     #     robot.flags["adjusted heading"] = False
     #     move_to_point(robot, [0.725, 0])
+
+    if abs(robot.ball_pos_arr[-1][1]) > 0.18:
+        if robot.ball_pos_arr[-1][1] > 0:
+            ball_y = 0.18
+        else:
+            ball_y = -0.18
+    else:
+        ball_y = robot.ball_pos_arr[-1][1]
+
     if abs(robot.robot_pos_arr[-1][0] - 0.725) > 0.1:
         robot.flags["adjusted heading"] = False
-        move_to_point(robot, [0.725, 0])
+        goal_coord = [0.725, ball_y]
+        if abs(get_coord_angle(robot.robot_pos_arr[-1], robot.heading, goal_coord)) > 90:
+            move_to_point(robot, goal_coord, False)
+        else:
+            move_to_point(robot, goal_coord)
     else:
 
         if robot.flags["adjusted heading"]:
-            coord = [0.725, robot.ball_pos_arr[-1][1]]
+
+            coord = [0.725, ball_y]
 
             if (coord[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= coord[0] + 0.04) and (
                     coord[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= coord[1] + 0.04):
@@ -764,7 +789,10 @@ def defend_strategy_2(robot: RCJSoccerRobot, was_intercepting=True):
         robot.flags["intercepting ball"][0] = True
         robot.flags["intercepting ball"][1] = 2
         # predicted_pos = predict_ball_pos(robot, 18)
-        predicted_pos = predict_optimal_pos(robot, False)[0]
+        prediction = predict_optimal_pos(robot, False)
+        predicted_pos = prediction[0]
+
+        print(prediction[2])
 
         robot.ball_intercept_pos = predicted_pos
         robot.ball_intercept_direction = get_ball_speed(robot)[1]
@@ -1115,6 +1143,8 @@ def predict_optimal_pos(robot: RCJSoccerRobot, defence=True):
     # end position (after 45 time steps)
     b2 = predict_ball_pos(robot, 45)
 
+    print("b1: {}, b2: {}".format(b1, b2))
+
     # check if x or y coordinate is out of field boundaries
     if b2[0] > 0.7:
         b2 = [0.7, b2[1]]
@@ -1165,6 +1195,15 @@ def predict_optimal_pos(robot: RCJSoccerRobot, defence=True):
             return pos, final_robot_time, True
 
     # print("r: {}, b: {}".format(robot_time[0], ball_time))
+
+    if speed[0] < 0.3:
+        pos = b1
+        robot_time = predict_robot_time(robot.robot_pos_arr[-1], robot.heading, pos, 0)
+        robot_ball_angle = get_coord_angle(robot_time[2], robot_time[1], robot.ball_pos_arr[-1])
+        turn_time = (abs(robot_ball_angle) / 360) * 14
+        final_robot_time = robot_time[0] + turn_time + 4.5
+        return pos, final_robot_time, True
+
     return pos, final_robot_time, False
 
 
@@ -1462,6 +1501,21 @@ def check_ball_dir_robot(robot: RCJSoccerRobot):
             robot.flags["ball getting closer"] = False
 
 
+def adjust_robot_penalty_time(robot: RCJSoccerRobot):
+    if robot.robot_pos_arr:
+        robot_pos = robot.robot_pos_arr[-1]
+        if robot.robot_pos_arr[-1][0] > 0.47 and abs(robot_pos[1]) < 0.35:
+            robot.outside_timer = 0
+            if not robot.flags["robot in penalty area"] and (time.time() - robot.outside_timer > 2):
+                if time.time() - robot.outside_timer > 2:
+                    robot.penalty_area_timer = time.time()
+                robot.flags["robot in penalty area"] = True
+        else:
+            if robot.flags["robot in penalty area"]:
+                robot.outside_timer = time.time()
+                robot.flags["robot in penalty area"] = False
+
+
 def adjust_robot_stuck_timer(robot: RCJSoccerRobot):
     if robot.robot_pos_arr:
         if get_robot_speed(robot)[0] < 1 and robot.flags["real robot speed"]:
@@ -1482,15 +1536,15 @@ def mimic(robot: RCJSoccerRobot):
     #     move_to_point(robot, robot.ball_pos_arr[-1])
     # else:
 
-    if abs(robot.robot_pos_arr[-1][0] - 0.3) > 0.1:
+    if abs(robot.robot_pos_arr[-1][0] - 0.45) > 0.1:
         robot.flags["adjusted heading"] = False
 
-    if abs(robot.robot_pos_arr[-1][0] - 0.3) > 0.05:
-        move_to_point(robot, [0.3, robot.ball_pos_arr[-1][1]])
+    if abs(robot.robot_pos_arr[-1][0] - 0.45) > 0.05:
+        move_to_point(robot, [0.45, robot.ball_pos_arr[-1][1]])
     else:
 
         if robot.flags["adjusted heading"]:
-            coord = [0.3, robot.ball_pos_arr[-1][1]]
+            coord = [0.45, robot.ball_pos_arr[-1][1]]
 
             if (coord[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= coord[0] + 0.04) and (
                     coord[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= coord[1] + 0.04):
@@ -1518,40 +1572,112 @@ def assign_role(robot: RCJSoccerRobot):
     if robot.player_id == 1:
         print("ball status: {}".format(ball_status))
 
-    if ball_status == 1:
-        if not robot.flags["predicted"]:
-            predicted_time = predict_optimal_pos(robot)
-            if predicted_time[2]:
-                robot.predicted_intercept_time = predicted_time[1]
+        # if robot.stuck and robot.player_id == 1 and time.time() - robot.timer > 6:
+        #     if not (8 in robot.roles):
+        #         if robot.ball_pos_arr:
+        #             ball_dist_arr = [("1", get_dist(robot.robot_pos_arr[-1], robot.ball_pos_arr[-1]))]
+        #             for name in robot.team_data:
+        #                 if robot.team_data[name]:
+        #                     ball_dist_arr.append((name[1], get_dist(robot.team_data[name]["robot_pos"], robot.ball_pos_arr[-1])))
+        #             ball_dist_arr.sort(key=lambda x: x[1])
+        #
+        #             robot.roles[int(ball_dist_arr[-1][0]) - 1] = 8
+        # else:
+        if ball_status == 1:
+            if not robot.flags["predicted"]:
+                predicted_time = predict_optimal_pos(robot)
+                if predicted_time[2]:
+                    robot.predicted_intercept_time = predicted_time[1]
+                else:
+                    robot.predicted_intercept_time = -1
+                robot.flags["predicted"] = True
             else:
-                robot.predicted_intercept_time = -1
-            robot.flags["predicted"] = True
-        else:
+                if robot.player_id == 1:
+                    # print("speed: {}, \nangle: {}".format(*get_ball_speed(robot)[:2]))
+                    robots_arr = [1, 2, 3]
+                    optimal_time_arr = [("1", robot.predicted_intercept_time)]
+                    for name in robot.team_data:
+                        if robot.team_data[name]:
+                            if robot.team_data[name]["predicted intercept time"] != -1:
+                                optimal_time_arr.append((name[1], robot.team_data[name]["predicted intercept time"]))
+                    # check if one of the robots can intercept the ball
+                    if not (len(optimal_time_arr) == 1 and optimal_time_arr[0][1] == -1):
+
+                        optimal_time_arr.sort(key=lambda x: x[1])
+                        optimal_time_arr = list(filter(lambda x: x[1] > 0, optimal_time_arr))
+                        # Assign interceptor role to lowest time and pop him from array
+                        if optimal_time_arr[0][0] == "1":
+                            robot.roles[0] = 1
+                            robots_arr.pop(0)
+                        elif optimal_time_arr[0][0] == "2":
+                            robot.roles[1] = 1
+                            robots_arr.pop(1)
+                        elif optimal_time_arr[0][0] == "3":
+                            robot.roles[2] = 1
+                            robots_arr.pop(2)
+
+                    # check for the nearest robot to defend
+                    goal_dist_arr = []
+                    for i in robots_arr:
+                        if i != 1:
+                            pos = robot.team_data["B" + str(i)]["robot_pos"]
+                            goal_dist_arr.append(
+                                (i, get_dist(pos, robot.goal[1]))
+                            )
+                        else:
+                            goal_dist_arr.append(
+                                (i, get_dist(robot.robot_pos_arr[-1], robot.goal[1]))
+                            )
+
+                    goal_dist_arr.sort(key=lambda x: x[1])
+
+                    # assign roles to robots in their corresponding indexes
+                    robot.roles[int(goal_dist_arr[0][0]) - 1] = 2
+                    robot.roles[int(goal_dist_arr[1][0]) - 1] = 4
+                    if len(robots_arr) == 3:
+                        robot.roles[int(goal_dist_arr[2][0]) - 1] = 4
+        elif ball_status == 2:
+            ball_data = get_ball_speed(robot)
+            angle_1 = (ball_data[1] + 90) * math.pi / 180
+            angle_2 = (ball_data[1] - 90) * math.pi / 180
+            pos_1 = (ball_data[2][0] + 0.16 * math.cos(angle_1), ball_data[2][1] + 0.16 * math.sin(angle_1))
+            pos_2 = (ball_data[2][0] + 0.16 * math.cos(angle_2), ball_data[2][1] + 0.16 * math.sin(angle_2))
+            gradient = math.tan(ball_data[1] * math.pi / 180)
+            ball_constant = ball_data[2][1] - ball_data[2][0] * gradient
+            constant_1 = pos_1[1] - gradient * pos_1[0]
+            constant_2 = pos_2[1] - gradient * pos_2[0]
+            if constant_1 > constant_2:
+                constant_1, constant_2 = constant_2, constant_1
+            robot_x = robot.robot_pos_arr[-1][0]
+            robot_y = robot.robot_pos_arr[-1][1]
+
+            if (robot_x * gradient + constant_1 < robot_y < robot_x * gradient + constant_2) and (
+                    robot_x < robot.ball_pos_arr[-1][0]):
+                print("robot {} is blocking\n".format(robot.player_id))
+                print("g: {}, \nc1: {}, \nc2: {}".format(gradient, constant_1, constant_2))
+                if robot_x * gradient + ball_constant < robot_y:
+                    test_angle = ball_data[1] - 90
+                    if test_angle > 180:
+                        test_angle -= 360
+                    elif test_angle < -180:
+                        test_angle += 360
+                        print("should go left, to: {}".format(test_angle))
+                else:
+                    test_angle = ball_data[1] + 90
+                    if test_angle > 180:
+                        test_angle -= 360
+                    elif test_angle < -180:
+                        test_angle += 360
+                    print("should go right, to: {}".format(test_angle))
+
+                if ball_data[1] > 0:
+                    pass
+                else:
+                    pass
+        elif ball_status == 3:
             if robot.player_id == 1:
-                print("speed: {}, \nangle: {}".format(*get_ball_speed(robot)[:2]))
                 robots_arr = [1, 2, 3]
-                optimal_time_arr = [("1", robot.predicted_intercept_time)]
-                for name in robot.team_data:
-                    if robot.team_data[name]:
-                        if robot.team_data[name]["predicted intercept time"] != -1:
-                            optimal_time_arr.append((name[1], robot.team_data[name]["predicted intercept time"]))
-                # check if one of the robots can intercept the ball
-                if not (len(optimal_time_arr) == 1 and optimal_time_arr[0][1] == -1):
-
-                    optimal_time_arr.sort(key=lambda x: x[1])
-                    optimal_time_arr = list(filter(lambda x: x[1] > 0, optimal_time_arr))
-                    # Assign interceptor role to lowest time and pop him from array
-                    if optimal_time_arr[0][0] == "1":
-                        robot.roles[0] = 1
-                        robots_arr.pop(0)
-                    elif optimal_time_arr[0][0] == "2":
-                        robot.roles[1] = 1
-                        robots_arr.pop(1)
-                    elif optimal_time_arr[0][0] == "3":
-                        robot.roles[2] = 1
-                        robots_arr.pop(2)
-
-                # check for the nearest robot to defend
+                # Nearest to goal defends
                 goal_dist_arr = []
                 for i in robots_arr:
                     if i != 1:
@@ -1566,116 +1692,115 @@ def assign_role(robot: RCJSoccerRobot):
 
                 goal_dist_arr.sort(key=lambda x: x[1])
 
-                # assign roles to robots in their corresponding indexes
-                robot.roles[int(goal_dist_arr[0][0]) - 1] = 2
-                robot.roles[int(goal_dist_arr[1][0]) - 1] = 4
-                if len(robots_arr) == 3:
-                    robot.roles[int(goal_dist_arr[2][0]) - 1] = 4
-    elif ball_status == 2:
-        ball_data = get_ball_speed(robot)
-        angle_1 = (ball_data[1] + 90) * math.pi / 180
-        angle_2 = (ball_data[1] - 90) * math.pi / 180
-        pos_1 = (ball_data[2][0] + 0.16 * math.cos(angle_1), ball_data[2][1] + 0.16 * math.sin(angle_1))
-        pos_2 = (ball_data[2][0] + 0.16 * math.cos(angle_2), ball_data[2][1] + 0.16 * math.sin(angle_2))
-        gradient = math.tan(ball_data[1] * math.pi / 180)
-        ball_constant = ball_data[2][1] - ball_data[2][0] * gradient
-        constant_1 = pos_1[1] - gradient * pos_1[0]
-        constant_2 = pos_2[1] - gradient * pos_2[0]
-        if constant_1 > constant_2:
-            constant_1, constant_2 = constant_2, constant_1
-        robot_x = robot.robot_pos_arr[-1][0]
-        robot_y = robot.robot_pos_arr[-1][1]
+                robot.roles[int(goal_dist_arr[0][0]) - 1] = 3
+                robots_arr.pop(int(goal_dist_arr[0][0]) - 1)
 
-        if (robot_x * gradient + constant_1 < robot_y < robot_x * gradient + constant_2) and (
-                robot_x < robot.ball_pos_arr[-1][0]):
-            print("robot {} is blocking\n".format(robot.player_id))
-            print("g: {}, \nc1: {}, \nc2: {}".format(gradient, constant_1, constant_2))
-            if robot_x * gradient + ball_constant < robot_y:
-                test_angle = ball_data[1] - 90
-                if test_angle > 180:
-                    test_angle -= 360
-                elif test_angle < -180:
-                    test_angle += 360
-                    print("should go left, to: {}".format(test_angle))
-            else:
-                test_angle = ball_data[1] + 90
-                if test_angle > 180:
-                    test_angle -= 360
-                elif test_angle < -180:
-                    test_angle += 360
-                print("should go right, to: {}".format(test_angle))
+                # decide which corner and assign nearest to that corner to block it
+                if robot.ball_pos_arr[-1][1] > 0:
+                    corner = robot.goal[0]
+                else:
+                    corner = robot.goal[2]
 
-            if ball_data[1] > 0:
-                pass
-            else:
-                pass
-    elif ball_status == 3:
-        if robot.player_id == 1:
+                corner_dist_arr = []
+                for i in robots_arr:
+                    if i != 1:
+                        pos = robot.team_data["B" + str(i)]["robot_pos"]
+                        corner_dist_arr.append(
+                            (i, get_dist(pos, corner))
+                        )
+                    else:
+                        corner_dist_arr.append(
+                            (i, get_dist(robot.robot_pos_arr[-1], corner))
+                        )
+
+                corner_dist_arr.sort(key=lambda x: x[1])
+
+                robot.roles[int(corner_dist_arr[0][0]) - 1] = 3
+                robot.roles[int(corner_dist_arr[1][0]) - 1] = 4
+                # robot.roles[0] = 3
+                # robot.roles[1] = -1
+                # robot.roles[2] = -1
+        elif ball_status == 4:
             if robot.player_id == 1:
-                # robots_arr = [1, 2, 3]
-                # # Nearest to goal defends
-                # goal_dist_arr = []
-                # for i in robots_arr:
-                #     if i != 1:
-                #         pos = robot.team_data["B" + str(i)]["robot_pos"]
-                #         goal_dist_arr.append(
-                #             (i, get_dist(pos, robot.goal[1]))
-                #         )
-                #     else:
-                #         goal_dist_arr.append(
-                #             (i, get_dist(robot.robot_pos_arr[-1], robot.goal[1]))
-                #         )
-                #
-                # goal_dist_arr.sort(key=lambda x: x[1])
-                #
-                # robot.roles[int(goal_dist_arr[0][0]) - 1] = 3
-                # robots_arr.pop(int(goal_dist_arr[0][0]) - 1)
-                #
-                # # decide which corner and assign nearest to that corner to block it
-                # if robot.ball_pos_arr[-1][1] > 0:
-                #     corner = robot.goal[0]
-                # else:
-                #     corner = robot.goal[2]
-                #
-                # corner_dist_arr = []
-                # for i in robots_arr:
-                #     if i != 1:
-                #         pos = robot.team_data["B" + str(i)]["robot_pos"]
-                #         corner_dist_arr.append(
-                #             (i, get_dist(pos, corner))
-                #         )
-                #     else:
-                #         corner_dist_arr.append(
-                #             (i, get_dist(robot.robot_pos_arr[-1], corner))
-                #         )
-                #
-                # corner_dist_arr.sort(key=lambda x: x[1])
-                #
-                # robot.roles[int(corner_dist_arr[0][0]) - 1] = 3
-                # robot.roles[int(corner_dist_arr[1][0]) - 1] = 4
-                robot.roles[0] = 3
-                robot.roles[1] = 3
-                robot.roles[2] = 3
-    elif ball_status == 4:
-        if robot.player_id == 1:
-            robot.roles[0] = 3
-            robot.roles[1] = 3
-            robot.roles[2] = 3
+                robots_arr = [1, 2, 3]
+                # Nearest to goal defends
+                goal_dist_arr = []
+                for i in robots_arr:
+                    if i != 1:
+                        pos = robot.team_data["B" + str(i)]["robot_pos"]
+                        goal_dist_arr.append(
+                            (i, get_dist(pos, robot.goal[1]))
+                        )
+                    else:
+                        goal_dist_arr.append(
+                            (i, get_dist(robot.robot_pos_arr[-1], robot.goal[1]))
+                        )
 
-    elif ball_status == 5:
-        if robot.player_id == 1:
-            # Assign closest 2 to follow and 3rd to mimic
-            # if robot.player_id == 1:
-            #     ball_dist_arr = [("1", get_dist(robot.robot_pos_arr[-1], robot.ball_pos_arr[-1]))]
-            #     for name in robot.team_data:
-            #         if robot.team_data[name]:
-            #             ball_dist_arr.append((name[1], get_dist(robot.team_data[name]["robot_pos"], robot.ball_pos_arr[-1])))
-            #     ball_dist_arr.sort(key=lambda x: x[1])
-            #     robot.roles[int(ball_dist_arr[2][0]) - 1] = 5
-            #     robot.roles[int(ball_dist_arr[1][0]) - 1] = 4
-            #     robot.roles[int(ball_dist_arr[0][0]) - 1] = 4
-            robot.roles[0] = 3
-            robot.roles[1] = 3
-            robot.roles[2] = 3
-    elif ball_status == 6:
-        pass
+                goal_dist_arr.sort(key=lambda x: x[1])
+
+                robot.roles[int(goal_dist_arr[0][0]) - 1] = 2
+                robots_arr.pop(int(goal_dist_arr[0][0]) - 1)
+
+                # Assign rest to ball handle
+                robot.roles[robots_arr[0] - 1] = 4
+                robot.roles[robots_arr[1] - 1] = 4
+
+        elif ball_status == 5:
+            if robot.player_id == 1:
+                if 5 in robot.roles:
+                    # Assign closest 2 to follow and 3rd to mimic
+                    if robot.player_id == 1:
+                        ball_dist_arr = [("1", get_dist(robot.robot_pos_arr[-1], robot.ball_pos_arr[-1]))]
+                        for name in robot.team_data:
+                            if robot.team_data[name]:
+                                ball_dist_arr.append(
+                                    (name[1], get_dist(robot.team_data[name]["robot_pos"], robot.ball_pos_arr[-1])))
+                        ball_dist_arr.sort(key=lambda x: x[1])
+                        robot.roles[int(ball_dist_arr[2][0]) - 1] = 5
+                        robot.roles[int(ball_dist_arr[1][0]) - 1] = 4
+                        robot.roles[int(ball_dist_arr[0][0]) - 1] = 4
+                # robot.roles[0] = -1
+                # robot.roles[1] = -1
+                # robot.roles[2] = -1
+        elif ball_status == 6:
+            # Avoid no ball data error
+            allowed_roles = [-1, 6, 7]
+            if not (robot.roles[robot.player_id - 1] in allowed_roles):
+                robot.roles[robot.player_id - 1] = -1
+
+            if robot.player_id == 1 and robot.time_step > 2:
+                robots_arr = [1, 2, 3]
+                # Nearest to goal defends
+                up_corner_dist_arr = []
+                for i in robots_arr:
+                    if i != 1:
+                        pos = robot.team_data["B" + str(i)]["robot_pos"]
+                        up_corner_dist_arr.append(
+                            (i, get_dist(pos, robot.goal[0]))
+                        )
+                    else:
+                        up_corner_dist_arr.append(
+                            (i, get_dist(robot.robot_pos_arr[-1], robot.goal[0]))
+                        )
+
+                up_corner_dist_arr.sort(key=lambda x: x[1])
+
+                robot.roles[int(up_corner_dist_arr[0][0]) - 1] = 6
+                robots_arr.pop(int(up_corner_dist_arr[0][0]) - 1)
+
+                down_corner_dist_arr = []
+                for i in robots_arr:
+                    if i != 1:
+                        pos = robot.team_data["B" + str(i)]["robot_pos"]
+                        down_corner_dist_arr.append(
+                            (i, get_dist(pos, robot.goal[2]))
+                        )
+                    else:
+                        down_corner_dist_arr.append(
+                            (i, get_dist(robot.robot_pos_arr[-1], robot.goal[2]))
+                        )
+
+                down_corner_dist_arr.sort(key=lambda x: x[1])
+
+                robot.roles[int(down_corner_dist_arr[0][0]) - 1] = 7
+                robot.roles[int(down_corner_dist_arr[1][0]) - 1] = -1

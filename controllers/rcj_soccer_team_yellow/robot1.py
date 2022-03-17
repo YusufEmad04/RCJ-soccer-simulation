@@ -16,8 +16,6 @@ class MyRobot1(RCJSoccerRobot):
 
                 while self.is_new_team_data():
                     team_data = self.get_new_team_data()  # noqa: F841
-                    self.right_motor.setVelocity(6)
-                    self.left_motor.setVelocity(6)
                     # Do something with team data
 
                 if self.is_new_ball_data():
@@ -43,15 +41,15 @@ class MyRobot1(RCJSoccerRobot):
                 # If the robot has the ball right in front of it, go forward,
                 # rotate otherwise
                 if direction == 0:
-                    left_speed = 5
-                    right_speed = 5
+                    left_speed = 10
+                    right_speed = 10
                 else:
-                    left_speed = direction * 4
-                    right_speed = direction * -4
+                    left_speed = direction * 10
+                    right_speed = direction * -10
 
                 # Set the speed to motors
-                # self.left_motor.setVelocity(0)
-                # self.right_motor.setVelocity(0)
+                self.left_motor.setVelocity(0)
+                self.right_motor.setVelocity(0)
 
                 # Send message to team robots
                 self.send_data_to_team(self.player_id)

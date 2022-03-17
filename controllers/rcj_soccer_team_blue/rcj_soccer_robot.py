@@ -38,6 +38,7 @@ class RCJSoccerRobot:
         self.sonar_front.enable(TIME_STEP)
         self.sonar_back = self.robot.getDevice("distancesensor back")
         self.sonar_back.enable(TIME_STEP)
+        self.ultrasonic_arr = []
 
         self.left_motor = self.robot.getDevice("left wheel motor")
         self.right_motor = self.robot.getDevice("right wheel motor")
@@ -69,13 +70,18 @@ class RCJSoccerRobot:
         self.enemy_goal = [(-0.72, 0.35), (-0.72, 0), (-0.72, -0.35)]
 
         """
-        1. intercept
-        2. defend
-        3. corner
-        4. ball handle (Ball follower)
-        5. Mimic
+        -1. Do nothing 
+         1. intercept
+         2. defend
+         3. corner
+         4. ball handle (Ball follower)
+         5. Mimic
+         6. corner up
+         7. corner down
+         8. relocation
+        
         """
-        self.roles = [3, 3, 3]
+        self.roles = [-1, -1, -1]
 
         self.moving_to_x = False
         self.moving_to_y = False
@@ -107,8 +113,11 @@ class RCJSoccerRobot:
         self.ball_predicted_pos = [0, 0]
         self.pos_test = 0
         self.corner_push_timer = 0
+        self.penalty_area_timer = 0
+        self.outside_timer = 0
 
         self.flags = {
+            "Waiting for kickoff": False,
             "moving to x": False,
             "moving to y": False,
             "moving to z": True,
@@ -135,6 +144,7 @@ class RCJSoccerRobot:
             "ball getting closer": False,
             "adjusted heading": False,
             "robot is stuck": False,
+            "robot in penalty area": False,
             "real ball speed": False,
             "real robot speed": False,
             "shooting from right": False,

@@ -1,0 +1,578 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.2.3, mkdocs-material-8.2.5">
+    
+    
+      
+        <title>Inter-robot communication - RCJ Soccer Sim</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.2d9f7617.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.e6a45f82.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#009485">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="teal" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#communication-between-robots" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="RCJ Soccer Sim" class="md-header__button md-logo" aria-label="RCJ Soccer Sim" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            RCJ Soccer Sim
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Inter-robot communication
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="RCJ Soccer Sim" class="md-nav__button md-logo" aria-label="RCJ Soccer Sim" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    RCJ Soccer Sim
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Introduction
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting_started/" class="md-nav__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how_to_robot/" class="md-nav__link">
+        How to program your robot
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Inter-robot communication
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Inter-robot communication
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#definition-in-the-world-file" class="md-nav__link">
+    Definition in the world file
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initializing-the-communication" class="md-nav__link">
+    Initializing the communication
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sending-a-message" class="md-nav__link">
+    Sending a message
+  </a>
+  
+    <nav class="md-nav" aria-label="Sending a message">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#converting-the-message-into-a-packet" class="md-nav__link">
+    Converting the message into a packet
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#receiving-a-message" class="md-nav__link">
+    Receiving a message
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how_to_run_sim/" class="md-nav__link">
+        How to run the simulation
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#definition-in-the-world-file" class="md-nav__link">
+    Definition in the world file
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initializing-the-communication" class="md-nav__link">
+    Initializing the communication
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sending-a-message" class="md-nav__link">
+    Sending a message
+  </a>
+  
+    <nav class="md-nav" aria-label="Sending a message">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#converting-the-message-into-a-packet" class="md-nav__link">
+    Converting the message into a packet
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#receiving-a-message" class="md-nav__link">
+    Receiving a message
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+<h1 id="communication-between-robots">Communication between robots</h1>
+<p>Each of the robots is equipped with two Receivers and one Emitter. One of the
+Receivers is used for receiving data from Supervisor. The Emitter and the second
+Receiver can be used for sending and receiving data between robots from the
+same team. We are going to describe what needs to be done in order to make use of it.</p>
+<h2 id="definition-in-the-world-file">Definition in the world file</h2>
+<p>Our world file defines one Emitter and one Receiver for team communication for
+each robot. Blue team is assigned channel 2, while yellow team is assigned
+channel 3. Webots supports changing channels, but we turned this feature off so teams
+are not able to spam the opponent with a bunch of messages.
+The name of the Emitter is set to <code>team emitter</code>, while the Receiver can be found
+under name <code>team receiver</code>.</p>
+<h2 id="initializing-the-communication">Initializing the communication</h2>
+<p>The first thing we need to do in order to setup the communication is initialize
+the Emitter and Receiver. To do so, just call following commands. We are going to use
+the <a href="https://en.wikipedia.org/wiki/Object-oriented_programming">OOP</a> approach here as well (see our sample robot controllers).</p>
+<div class="highlight"><pre><span></span><code><span class="bp">self</span><span class="o">.</span><span class="n">team_emitter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">getDevice</span><span class="p">(</span><span class="s2">&quot;team emitter&quot;</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">team_receiver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">getDevice</span><span class="p">(</span><span class="s2">&quot;team receiver&quot;</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">team_receiver</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="n">TIME_STEP</span><span class="p">)</span>
+</code></pre></div>
+<p>Before using the Receiver, we must enable it with <code>enable(TIME_STEP)</code> command,
+where <code>TIME_STEP</code> is the same value we use in our controller when calling
+<code>self.robot.step(TIME_STEP)</code>.</p>
+<h2 id="sending-a-message">Sending a message</h2>
+<p>Each time we send a message via a channel, all the receivers listening on
+this channel are going to receive it. So, if <code>robot1</code> sends a message,
+<code>robot2</code> and <code>robot3</code> from the same team can read it.</p>
+<h3 id="converting-the-message-into-a-packet">Converting the message into a packet</h3>
+<p>Imagine we would like to send values <code>v1</code>, <code>v2</code>, ... , <code>vn</code>.
+Before the message is sent to the channel, it must be converted into a packet.
+Simply put, the packet is just a bytes object representing values <code>v1</code>, <code>v2</code>, ... , <code>vn</code>.
+To convert our values into bytes object we can use built-in library
+called <a href="https://docs.python.org/3/library/struct.html">struct</a>, which is
+shipped together with Python.</p>
+<p>We need to know the type of each value we want to pack into a packet. Let's see a
+quick example. The values we want to send are <code>v1 = 3.14</code>, <code>v2 = 5</code> and <code>v3 = True</code>.
+It is obvious that <code>v1</code> is floating point number, <code>v2</code> is integer and <code>v3</code>
+is boolean. Knowing the type of each variable, we need to define the
+structure of the message.</p>
+<div class="highlight"><pre><span></span><code><span class="n">message_format</span> <span class="o">=</span> <span class="s2">&quot;di?&quot;</span>
+</code></pre></div>
+<p>The <code>struct</code> library defines various symbols we might use in order to represent
+a variable type. In our example <code>"d"</code> is representing floating point number,
+<code>"i"</code> is representing integer and <code>"?"</code> is representing boolean value.
+<em>If you want to use other variable types, check out
+<a href="https://docs.python.org/3/library/struct.html#format-characters">the struct format characters documentation</a></em>.
+Since we now know the structure of the message, we can create the packet</p>
+<div class="highlight"><pre><span></span><code><span class="n">packet</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">message_format</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">v3</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>Keep in mind that the order of variables passed to <code>pack()</code> function MUST be
+in the same order as specified in <code>message_format</code>, otherwise you might get
+a broken packet.</strong></p>
+<p>The only thing we need to do is emit the packet by the Emitter. It is as easy
+as just calling </p>
+<div class="highlight"><pre><span></span><code><span class="bp">self</span><span class="o">.</span><span class="n">team_emitter</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+</code></pre></div>
+<p>and the message is succesfully sent to the channel.</p>
+<h3 id="receiving-a-message">Receiving a message</h3>
+<p>When a Receiver receives a message, it adds it to the queue. We are then
+able to pull the oldest message out of the queue.</p>
+<p>To check the number of messages waiting in the queue, we can call</p>
+<div class="highlight"><pre><span></span><code><span class="bp">self</span><span class="o">.</span><span class="n">team_receiver</span><span class="o">.</span><span class="n">getQueueLength</span><span class="p">()</span>
+</code></pre></div>
+<p>If the there are new messages, the number of messages will be greater than 0 and
+we can proceed with reading the message.</p>
+<div class="highlight"><pre><span></span><code><span class="n">packet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">team_receiver</span><span class="o">.</span><span class="n">getData</span><span class="p">()</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">team_receiver</span><span class="o">.</span><span class="n">nextPacket</span><span class="p">()</span>
+</code></pre></div>
+<p>In the first row we call the <code>getData()</code> method, which returns the packet and assigns
+it to the <code>packet</code> variable. The <code>nextPacket()</code> method is used to move the pointer
+to the next packet in the queue, so next time we are calling <code>getData()</code>, we are going
+to read next packet in the queue.</p>
+<p>Okay, now we have packet. How do we unpack it? Well, remember our cool <code>struct</code>
+library? We are going to use it for unpacking the packet, too.</p>
+<p>First of all, we need to know what data we expect. In our example, we sent
+three variables in this order - floating point number, integer and boolean. Therefore,
+we can define the format of the message here as well.</p>
+<div class="highlight"><pre><span></span><code><span class="n">message_format</span> <span class="o">=</span> <span class="s1">&#39;di?&#39;</span>
+</code></pre></div>
+<p>Knowing what data to expect, we can unpack the packet by following command:</p>
+<div class="highlight"><pre><span></span><code><span class="n">unpacked</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">message_format</span><span class="p">,</span> <span class="n">packet</span><span class="p">)</span>
+</code></pre></div>
+<p>The variable <code>unpacked</code> is a tuple with our values. If we print it, we will get
+<code>(3.14, 5, True)</code>. We can access the values as we would for list
+(or array in other languages)</p>
+<div class="highlight"><pre><span></span><code><span class="n">v1</span> <span class="o">=</span> <span class="n">unpacked</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">v2</span> <span class="o">=</span> <span class="n">unpacked</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">v3</span> <span class="o">=</span> <span class="n">unpacked</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+</code></pre></div>
+<p><strong>WARNING: There are 3 robots within the team running asynchronously. If all of them
+are sending messages, it is always good to empty the queue before moving on, otherwise
+the queue might grow and you will be reading old messages. You can use
+a <code>while</code> loop for example</strong></p>
+<div class="highlight"><pre><span></span><code><span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">team_receiver</span><span class="o">.</span><span class="n">getQueueLength</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">packet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">team_receiver</span><span class="o">.</span><span class="n">getData</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">team_receiver</span><span class="o">.</span><span class="n">nextPacket</span><span class="p">()</span>
+    <span class="c1"># Do something with the packet</span>
+</code></pre></div>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../how_to_robot/" class="md-footer__link md-footer__link--prev" aria-label="Previous: How to program your robot" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              How to program your robot
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../how_to_run_sim/" class="md-footer__link md-footer__link--next" aria-label="Next: How to run the simulation" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              How to run the simulation
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "search": "../assets/javascripts/workers/search.bd0b6b67.min.js"}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.467223ff.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -19,10 +19,24 @@ class MyRobot1(RCJSoccerRobot):
                 # receive and print data (team + supervisor)
                 data = receive_data(self)
                 # print("id: {}, {}".format(self.player_id,self.team_data))
-                check_strategy(self)
-                print("robot 1: {}".format(self.roles[0]))
-
-                # adjust_robot_penalty_time(self)
+                # check_strategy(self)
+                # print("robot 1: {}".format(self.roles[0]))
+                # print("outside timer: {}".format(time.time() - self.outside_timer))
+                # print("penalty area timer: {}".format(time.time() - self.penalty_area_timer))
+                # print("robot is in penalty area: {}".format(self.flags["robot in penalty area"]))
+                # print("--------------")
+                # get_real_ball_status(self)
+                # if self.ball_status in [1, 4]:
+                #     if abs(self.ball_pos_arr[-1][1]) > 0.15 and self.ball_pos_arr[-1][0] > 0.4:
+                #         print("corner")
+                #         go_to_corner2(self)
+                #     else:
+                #         print("defend")
+                #         defend_mimic_at_goal(self)
+                # else:
+                #     self.set_left_vel(0)
+                #     self.set_right_vel(0)
+                # adjust_robot_penalty_ti me(self)
                 # print("robot in penalty area: {}".format(self.flags["robot in penalty area"]))
                 # print("outside timer: {}".format(time.time() - self.outside_timer))
                 # print("penalty area timer: {}".format(time.time() - self.penalty_area_timer))

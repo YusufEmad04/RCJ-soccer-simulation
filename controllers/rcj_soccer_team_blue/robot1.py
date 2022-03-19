@@ -19,13 +19,14 @@ class MyRobot1(RCJSoccerRobot):
                 # receive and print data (team + supervisor)
                 data = receive_data(self)
                 # print("id: {}, {}".format(self.player_id,self.team_data))
-                # check_strategy(self)
-                # print("robot 1: {}".format(self.roles[0]))
+                check_strategy(self)
+                print("robot 1: {}".format(self.roles[0]))
 
-                adjust_robot_penalty_time(self)
-                print("robot in penalty area: {}".format(self.flags["robot in penalty area"]))
-                print("outside timer: {}".format(time.time() - self.outside_timer))
-                print("penalty area timer: {}".format(time.time() - self.penalty_area_timer))
+                # adjust_robot_penalty_time(self)
+                # print("robot in penalty area: {}".format(self.flags["robot in penalty area"]))
+                # print("outside timer: {}".format(time.time() - self.outside_timer))
+                # print("penalty area timer: {}".format(time.time() - self.penalty_area_timer))
+                # print("--------------------")
 
 
                 # check if there is data from (ball receiver)

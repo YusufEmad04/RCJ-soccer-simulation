@@ -52,8 +52,11 @@ class RCJSoccerRobot:
         self.heading = 0
         self.ultrasonic_data = dict()
         self.team_data = dict()
-
+    
+        self.star_time = time.time()
         self.time_step = 0
+        self.my_goals = 0
+        self.enemy_goals = 0
         self.ball_pos_arr = []
         self.robot_pos_arr = []
         self.time_steps_arr = []
@@ -118,6 +121,7 @@ class RCJSoccerRobot:
 
         self.flags = {
             "Waiting for kickoff": False,
+            "goal_registered": False,
             "moving to x": False,
             "moving to y": False,
             "moving to z": True,

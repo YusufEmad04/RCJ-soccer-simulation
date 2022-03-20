@@ -18,6 +18,10 @@ class MyRobot1(RCJSoccerRobot):
 
                 # receive and print data (team + supervisor)
                 data = receive_data(self)
+                check_strategy(self)
+                if self.ball_pos_arr:
+                    print(self.ball_pos_arr[-1])
+                print("Enemy score: {} \tSelf score: {}\tGoal registered flag: {}\nKickoff: {}\n----------".format(self.enemy_goals, self.my_goals, self.flags["goal_registered"], self.flags["waiting_for_kickoff"]))
                 # print("id: {}, {}".format(self.player_id,self.team_data))
                 # check_strategy(self)
                 # print("robot 1: {}".format(self.roles[0]))

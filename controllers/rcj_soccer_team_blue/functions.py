@@ -155,6 +155,16 @@ def print_data(data, k=None):
         print("\n--------------------\n")
 
 
+def calculate_score(robot: RCJSoccerRobot):
+    if abs(robot.ball_pos_arr[-1][1]) <= 0.2 and not(robot.flags["goal_registered"]):
+        if robot.ball_pos_arr[-1][0] >= 0.75:
+            robot.flags["goal_registered"] = True
+            robot.enemy_goals += 1
+        elif robot.ball_pos_arr[-1][0] <= -0.75:
+            robot.flags["goal_registered"] = True
+            robot.my_goals += 1
+
+
 def receive_ball_data(robot: RCJSoccerRobot):
     heading = robot.heading
     robot_pos = robot.robot_pos_arr[-1]
@@ -667,9 +677,12 @@ def check_strategy(robot: RCJSoccerRobot):
         if get_dist(robot.robot_pos_arr[0], robot.robot_pos_arr[-1]) > 1 or robot.flags["waiting_for_kickoff"]:
             # if robot.flags["waiting_for_kickoff"]:
             #     robot.time_step = 0
+            if robot.flags["waiting_for_kickoff"] and not(robot.flags["goal_registered"]):
+                calculate_score(robot)
             robot.set_left_vel(0)
             robot.set_right_vel(0)
         else:
+            robot.flags["goal_registered"] = False
             if not (robot.flags["robot is stuck"] and (15 >= time.time() - robot.stuck_timer >= 10)):
                 if not((robot.flags["robot in penalty area"] and 15 >= time.time() - robot.penalty_area_timer >= 10) or
                        (not(robot.flags["robot in penalty area"]) and 3 >= time.time() - robot.outside_timer >=0)):
@@ -1749,17 +1762,18 @@ def assign_role(robot: RCJSoccerRobot):
                         corner_dist_arr.sort(key=lambda x: x[1])
                         # TODO change corner person to be the one ready to defend
                         robot.roles[int(corner_dist_arr[0][0]) - 1] = 3
-                        robots_arr.remove(corner_dist_arr[0][0])
+                        robots_arr.remove(int(corner_dist_arr[0][0]))
                     elif ball_status == 4:
                         if robot.player_id == 1:
                             if 1 in robots_arr:
                                 ball_dist_arr = [("1", get_dist(robot.robot_pos_arr[-1], robot.ball_pos_arr[-1]))]
                             else:
                                 ball_dist_arr = []
-                            for name in robot.team_data:
-                                if robot.team_data[name]:
+                            for i in robots_arr:
+                                if robot.team_data["B" + str(i)]:
+                                    pos = robot.team_data["B" + str(i)]["robot_pos"]
                                     ball_dist_arr.append(
-                                        (name[1], get_dist(robot.team_data[name]["robot_pos"], robot.ball_pos_arr[-1])))
+                                        (i, get_dist(pos, robot.ball_pos_arr[-1])))
                             ball_dist_arr.sort(key=lambda x: x[1])
 
                             robot.roles[int(ball_dist_arr[0][0]) - 1] = 4

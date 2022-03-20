@@ -22,7 +22,6 @@ class MyRobot3(RCJSoccerRobot):
                 # print("id: {}, {}".format(self.player_id,self.team_data))
                 # check_strategy(self)
                 # print("robot 3: {}".format(self.roles[2]))
-                print("time step: {}".format(self.time_step))
                 # self.set_left_vel(7.3)
                 # self.set_right_vel(7.3)
                 # print("b3: {}".format(self.roles[2]))

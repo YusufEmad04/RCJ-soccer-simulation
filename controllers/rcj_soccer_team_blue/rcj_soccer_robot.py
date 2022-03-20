@@ -52,7 +52,7 @@ class RCJSoccerRobot:
         self.heading = 0
         self.ultrasonic_data = dict()
         self.team_data = dict()
-    
+
         self.star_time = time.time()
         self.time_step = 0
         self.my_goals = 0
@@ -73,15 +73,16 @@ class RCJSoccerRobot:
         self.enemy_goal = [(-0.72, 0.35), (-0.72, 0), (-0.72, -0.35)]
 
         """
-        -1. Do nothing 
+        -1. Go to origin 
          1. intercept
          2. defend
-         3. corner
+         3. ready_to_defend
          4. ball handle (Ball follower)
          5. Mimic
          6. corner up
          7. corner down
          8. relocation
+         9. Attack
         
         """
         self.roles = [-1, -1, -1]
@@ -154,7 +155,8 @@ class RCJSoccerRobot:
             "shooting from right": False,
             "shooting from left": False,
             "predicted": False,
-            "arrived at corner": False
+            "arrived at corner": False,
+            "defense_signal": False
         }
 
         self.start_time = time.time()
@@ -209,7 +211,7 @@ class RCJSoccerRobot:
         Returns:
             dict: Parsed message stored in dictionary.
         """
-        struct_fmt = 'iffff?fii'
+        struct_fmt = 'iffff?fii?'
         unpacked = struct.unpack(struct_fmt, packet)
 
         data = {
@@ -219,8 +221,8 @@ class RCJSoccerRobot:
             'see the ball': unpacked[5],
             'predicted intercept time': unpacked[6],
             'robot 2 role': unpacked[7],
-            'robot 3 role': unpacked[8]
-
+            'robot 3 role': unpacked[8],
+            'defense_signal': unpacked[9]
         }
 
         if round(unpacked[3], 0) == -2:
@@ -246,14 +248,14 @@ class RCJSoccerRobot:
         """
         return self.team_receiver.getQueueLength() > 0
 
-    def send_data_to_team(self, robot_id, robot_pos, ball_pos, see_ball, predicted_time, r2, r3) -> None:
+    def send_data_to_team(self, robot_id, robot_pos, ball_pos, see_ball, predicted_time, r2, r3, defence_signal) -> None:
         """Send data to the team
 
         Args:
              robot_id (int): ID of the robot
         """
-        struct_fmt = 'iffff?fii'
-        data = [robot_id, *robot_pos, *ball_pos, see_ball, predicted_time, r2, r3]
+        struct_fmt = 'iffff?fii?'
+        data = [robot_id, *robot_pos, *ball_pos, see_ball, predicted_time, r2, r3, defence_signal]
         packet = struct.pack(struct_fmt, *data)
         self.team_emitter.send(packet)
 

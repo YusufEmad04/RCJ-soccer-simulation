@@ -18,17 +18,12 @@ class MyRobot1(RCJSoccerRobot):
 
                 # receive and print data (team + supervisor)
                 data = receive_data(self)
+                # assign_role(self)
                 check_strategy(self)
-                if self.ball_pos_arr:
-                    print(self.ball_pos_arr[-1])
-                print("Enemy score: {} \tSelf score: {}\tGoal registered flag: {}\nKickoff: {}\n----------".format(self.enemy_goals, self.my_goals, self.flags["goal_registered"], self.flags["waiting_for_kickoff"]))
-                # print("id: {}, {}".format(self.player_id,self.team_data))
-                # check_strategy(self)
-                # print("robot 1: {}".format(self.roles[0]))
-                # print("outside timer: {}".format(time.time() - self.outside_timer))
-                # print("penalty area timer: {}".format(time.time() - self.penalty_area_timer))
-                # print("robot is in penalty area: {}".format(self.flags["robot in penalty area"]))
-                # print("--------------")
+                print("robot 1: {}".format(self.roles[0]))
+                self.set_left_vel(0)
+                self.set_right_vel(0)
+
                 # get_real_ball_status(self)
                 # if self.ball_status in [1, 4]:
                 #     if abs(self.ball_pos_arr[-1][1]) > 0.15 and self.ball_pos_arr[-1][0] > 0.4:

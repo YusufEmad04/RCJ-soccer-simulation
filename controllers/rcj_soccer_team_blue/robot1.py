@@ -19,8 +19,8 @@ class MyRobot1(RCJSoccerRobot):
                 # receive and print data (team + supervisor)
                 data = receive_data(self)
                 # assign_role(self)
-                check_strategy(self)
-                print("robot 1: {}".format(self.roles[0]))
+                # check_strategy(self)
+                # print("robot 1: {}".format(self.roles[0]))
                 self.set_left_vel(0)
                 self.set_right_vel(0)
 
@@ -47,6 +47,17 @@ class MyRobot1(RCJSoccerRobot):
 
                     # data from the ball receiver (ball receiver)
                     ball_data = receive_ball_data(self)
+                    
+                    ball_speed = get_ball_speed(self)
+                    print("Robot Angle: {}".format(self.heading))
+                    # if 30 >= ball_speed[1] >= -30:
+                    #     print("Avoiding")
+                    #     avoid_object(self)
+                    # else:
+                    #     print("BALL")
+                    #     move_to_point(self, ball_speed[2])
+                    # ready_to_defend(self)
+                    
                     # defend(self)
                     # intercept_ball(self)
 

@@ -692,18 +692,6 @@ def check_strategy(robot: RCJSoccerRobot):
             if not (robot.flags["robot is stuck"] and (15 >= time.time() - robot.stuck_timer >= 10)):
                 if not((robot.flags["robot in penalty area"] and 15 >= time.time() - robot.penalty_area_timer >= 10) or
                        (not(robot.flags["robot in penalty area"]) and 3 >= time.time() - robot.outside_timer >=0)):
-                    # if not robot.stuck and not in penalty:
-                    # get_real_ball_status(robot)
-                    # if robot.ball_status in [1, 4]:
-                    #     if abs(robot.ball_pos_arr[-1][1]) > 0.15 and robot.ball_pos_arr[-1][0] > 0.4:
-                    #         print("corner")
-                    #         go_to_corner2(robot)
-                    #     else:
-                    #         print("defend")
-                    #         defend_mimic_at_goal(robot)
-                    # else:
-                    #     robot.set_left_vel(0)
-                    #     robot.set_right_vel(0)
                     robot.flags["defense_signal"] = False
                     if role == 1:
                         if robot.flags["intercepting ball"][0]:
@@ -712,12 +700,10 @@ def check_strategy(robot: RCJSoccerRobot):
                             defend_strategy_2(robot, False)
                     elif role == 2:
                         if not (robot.ball_status == 6):
-                            defend_mimic_at_goal(robot)
-                        else:
-                            pass
+                            defense(robot)
                     elif role == 3:
                         if robot.ball_pos_arr:
-                            go_to_corner(robot)
+                            ready_to_defend(robot)
                     elif role == 4:
                         if robot.ball_pos_arr:
                             move_to_point(robot, robot.ball_pos_arr[-1])
@@ -729,10 +715,10 @@ def check_strategy(robot: RCJSoccerRobot):
                         move_to_point(robot, [0.71, -0.1])
                     elif role == 8:
                         shoot(robot)
+                    elif role == 9:
+                        move_to_point(robot, (-0.1, robot.robot_pos_arr[-1][1]))
                     else:
                         move_to_point(robot, [0, 0])
-                    # else:
-                    #     shoot(robot)
                 else:
                     print("In penalty for long")
                     robot.flags["defense_signal"] = True
@@ -755,7 +741,35 @@ def check_strategy(robot: RCJSoccerRobot):
 
 
 def defense(robot: RCJSoccerRobot):
-    pass
+    if abs(robot.ball_pos_arr[-1][1]) > 0.15 and robot.ball_pos_arr[-1][0] > 0.4:
+        go_to_corner2(robot)
+    else:
+        defend_mimic_at_goal(robot)
+
+
+def ready_to_defend(robot: RCJSoccerRobot):
+    if robot.flags["ready_to_push"] and get_dist(robot.robot_pos_arr[-1], robot.ball_pos_arr[-1]) <= 0.09:
+        move_to_point(robot, robot.ball_pos_arr[-1])
+    else:
+        robot.flags["ready_to_push"] = False
+        if robot.ball_pos_arr[-1][0] > 0.55 and abs(robot.ball_pos_arr[-1][1]) < 0.35:
+            if robot.robot_pos_arr[-1][1] >= 0 or robot.flags["go_to_down_corner"]:
+                coord = (0.7, 0.43)
+                sign = -1
+                robot.flags["go_to_down_corner"] = True
+            else:
+                coord = (0.7, -0.43)
+                sign = 1
+                robot.flags["go_to_down_corner"] = False
+            if (coord[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= coord[0] + 0.04) and (
+                    coord[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= coord[1] + 0.04):
+                if adjust_heading_to_angle(robot, sign * 120):
+                    robot.flags["ready_to_push"] = True
+            else:
+                move_to_point(robot, coord)
+        else:
+            robot.flags["go_to_down_corner"] = False
+            move_to_point(robot, robot.ball_pos_arr[-1])
 
 
 def defend_mimic_at_goal(robot: RCJSoccerRobot):
@@ -1516,6 +1530,23 @@ def check_for_real_robot_speed(robot: RCJSoccerRobot, speed):
         robot.temp_robot_speeds.append(speed)
 
 
+def avoid_object(robot: RCJSoccerRobot, coord=(0, 0), ball=True):
+    if ball:
+        ball_data = get_ball_speed(robot)
+        coord = ball_data[2]
+        angle = ball_data[1]
+    else:
+        angle = 0
+    angle_1 = (angle + 90) * math.pi / 180
+    angle_2 = (angle - 90) * math.pi / 180
+    pos_1 = (coord[0] + 0.1 * math.cos(angle_1), coord[1] + 0.1 * math.sin(angle_1))
+    pos_2 = (coord[0] + 0.1 * math.cos(angle_2), coord[1] + 0.1 * math.sin(angle_2))
+    if robot.robot_pos_arr[-1][1] >= 0:
+        move_to_point(robot, pos_1)
+    else:
+        move_to_point(robot, pos_2)
+
+
 def handle(robot: RCJSoccerRobot):
     ball_data = get_ball_speed(robot)
     dist = get_dist(ball_data[2], robot.robot_pos_arr[-1])
@@ -1617,10 +1648,6 @@ def adjust_robot_penalty_time(robot: RCJSoccerRobot):
                 robot.flags["robot in penalty area"] = False
             if time.time() - robot.penalty_area_timer > 4:
                 robot.penalty_area_timer = time.time()
-
-
-def adjust_robot_penalty_time2(rob):
-    pass
 
 
 def adjust_robot_stuck_timer(robot: RCJSoccerRobot):

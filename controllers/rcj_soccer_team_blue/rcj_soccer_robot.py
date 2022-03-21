@@ -156,6 +156,8 @@ class RCJSoccerRobot:
             "shooting from left": False,
             "predicted": False,
             "arrived at corner": False,
+            "ready_to_push": False,
+            "go_to_down_corner": False,
             "defense_signal": False
         }
 

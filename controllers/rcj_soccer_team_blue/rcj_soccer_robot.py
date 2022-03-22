@@ -58,6 +58,7 @@ class RCJSoccerRobot:
         self.my_goals = 0
         self.enemy_goals = 0
         self.ball_pos_arr = []
+        self.previous_ball_pos = (0, 0)
         self.robot_pos_arr = []
         self.time_steps_arr = []
         self.temp_ball_speeds = []

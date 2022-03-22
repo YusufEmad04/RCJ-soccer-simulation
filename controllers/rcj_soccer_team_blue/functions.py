@@ -431,6 +431,7 @@ def increment_step(robot: RCJSoccerRobot):
 
 
 def clear_ball_data(robot: RCJSoccerRobot):
+    robot.previous_ball_pos = robot.ball_pos_arr[-1]
     robot.ball_pos_arr = []
     robot.dist_arr = []
 
@@ -720,7 +721,11 @@ def check_strategy(robot: RCJSoccerRobot):
                     elif role == 9:
                         move_to_point(robot, (-0.3, 0.3))
                     else:
-                        move_to_point(robot, [0, 0])
+                        if robot.previous_ball_pos[0] >= 0:
+                            move_to_point(robot, (0.2, 0))
+                        else:
+                            move_to_point(robot, (-0.2, 0))
+
                 else:
                     print("In penalty for long")
                     robot.flags["defense_signal"] = True

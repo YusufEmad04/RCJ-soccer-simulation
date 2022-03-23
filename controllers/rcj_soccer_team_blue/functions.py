@@ -798,11 +798,11 @@ def defense(robot: RCJSoccerRobot):
 
 
 def receive_pass(robot: RCJSoccerRobot):
-    if get_dist(robot.robot_pos_arr[-1], robot.ball_pos_arr[-1]) >= 0.25:
+    if get_dist(robot.robot_pos_arr[-1], robot.ball_pos_arr[-1]) >= 0.13:
         if abs(robot.ball_pos_arr[-1][1]) >= 0.2:
             if robot.ball_pos_arr[-1][1] >= 0:
                 sign = 1
-                coord = [-0.66, -0.1]
+                coord = [-0.69, -0.1]
             else:
                 sign = -1
                 coord = [-0.66, 0.1]
@@ -820,11 +820,7 @@ def receive_pass(robot: RCJSoccerRobot):
         else:
             stop_all(robot)
     else:
-        if robot.robot_pos_arr[-1][0] <= -0.68:
-            stop_all(robot)
-        else:
-            robot.set_left_vel(10)
-            robot.set_right_vel(10)
+        move_to_point(robot, robot.ball_pos_arr[-1])
         # stop_all(robot)
 
 def ready_to_defend(robot: RCJSoccerRobot):

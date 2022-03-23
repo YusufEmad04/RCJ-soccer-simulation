@@ -318,16 +318,20 @@ def move_to_point(robot: RCJSoccerRobot, coord, forward=True, s=10):
             speed = -s
 
         # set each wheel's speed (left is at maximum, right is according to ratio)
-        if forward:
-            robot.set_left_vel(speed)
-            robot.set_right_vel(s)
-            # robot.set_left_vel(-10)
-            # robot.set_right_vel(-10 * ratio)
+        if (coord[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= coord[0] + 0.04) and (
+                coord[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= coord[1] + 0.04):
+            stop_all(robot)
         else:
-            robot.set_left_vel(-s)
-            robot.set_right_vel(-speed)
-            # robot.set_right_vel(10)
-            # robot.set_left_vel(10 * ratio)
+            if forward:
+                robot.set_left_vel(speed)
+                robot.set_right_vel(s)
+                # robot.set_left_vel(-10)
+                # robot.set_right_vel(-10 * ratio)
+            else:
+                robot.set_left_vel(-s)
+                robot.set_right_vel(-speed)
+                # robot.set_right_vel(10)
+                # robot.set_left_vel(10 * ratio)
 
     # checking coordinate is on left
     elif -180 <= angle < 0:
@@ -342,16 +346,20 @@ def move_to_point(robot: RCJSoccerRobot, coord, forward=True, s=10):
             speed = -s
 
         # set each wheel's speed (right is at maximum, left is according to ratio)
-        if forward:
-            robot.set_left_vel(s)
-            robot.set_right_vel(speed)
-            # robot.set_left_vel(-10 * ratio)
-            # robot.set_right_vel(-10)
+        if (coord[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= coord[0] + 0.04) and (
+                coord[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= coord[1] + 0.04):
+            stop_all(robot)
         else:
-            robot.set_left_vel(-speed)
-            robot.set_right_vel(-s)
-            # robot.set_right_vel(10 * ratio)
-            # robot.set_left_vel(10)
+            if forward:
+                robot.set_left_vel(s)
+                robot.set_right_vel(speed)
+                # robot.set_left_vel(-10 * ratio)
+                # robot.set_right_vel(-10)
+            else:
+                robot.set_left_vel(-speed)
+                robot.set_right_vel(-s)
+                # robot.set_right_vel(10 * ratio)
+                # robot.set_left_vel(10)
 
 
 def adjust_heading(robot: RCJSoccerRobot, obj):
@@ -653,7 +661,15 @@ def go_to_corner2(robot: RCJSoccerRobot):
         if (corner[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= corner[0] + 0.04) and (
                 corner[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= corner[1] + 0.04):
             robot.flags["arrived at corner"] = True
-            adjust_heading_to_angle(robot, 135, 5)
+            angle = robot.heading - 135
+            if abs(angle) < 90:
+                adjust_heading_to_angle(robot, 135, 5)
+            else:
+                if angle < 0:
+                    angle += 180
+                else:
+                    angle -= 180
+                adjust_heading_to_angle(robot, angle, 5)
         else:
             angle = get_coord_angle(robot.robot_pos_arr[-1], robot.heading, corner)
             if abs(angle) > 90:
@@ -669,7 +685,15 @@ def go_to_corner2(robot: RCJSoccerRobot):
         if (corner[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= corner[0] + 0.04) and (
                 corner[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= corner[1] + 0.04):
             robot.flags["arrived at corner"] = True
-            adjust_heading_to_angle(robot, 45, 5)
+            angle = robot.heading - 45
+            if abs(angle) < 90:
+                adjust_heading_to_angle(robot, 45, 5)
+            else:
+                if angle < 0:
+                    angle += 180
+                else:
+                    angle -= 180
+                adjust_heading_to_angle(robot, angle, 5)
         else:
             angle = get_coord_angle(robot.robot_pos_arr[-1], robot.heading, corner)
             if abs(angle) > 90:
@@ -685,18 +709,14 @@ def check_strategy(robot: RCJSoccerRobot):
     else:
         assign_role(robot)
         role = robot.roles[robot.player_id - 1]
-        if get_dist(robot.robot_pos_arr[0], robot.robot_pos_arr[-1]) > 1 or robot.flags["waiting_for_kickoff"] or robot.time_step < 4:
+        if get_dist(robot.robot_pos_arr[0], robot.robot_pos_arr[-1]) > 1 or robot.flags["waiting_for_kickoff"] or robot.time_step < 3:
             if robot.flags["waiting_for_kickoff"]:
                 robot.time_step = 0
             if robot.flags["waiting_for_kickoff"] and not (robot.flags["goal_registered"]):
                 calculate_score(robot)
             print("stop")
-            if robot.time_step < 2:
-                robot.set_left_vel(0)
-                robot.set_right_vel(0)
-            else:
-                robot.set_left_vel(5)
-                robot.set_right_vel(5)
+            robot.set_left_vel(0)
+            robot.set_right_vel(0)
         else:
             robot.flags["goal_registered"] = False
             if not (robot.flags["robot is stuck"] and (15 >= time.time() - robot.stuck_timer >= 10)):
@@ -778,11 +798,11 @@ def defense(robot: RCJSoccerRobot):
 
 
 def receive_pass(robot: RCJSoccerRobot):
-    if get_dist(robot.robot_pos_arr[-1], robot.ball_pos_arr[-1]) >= 0.13:
+    if get_dist(robot.robot_pos_arr[-1], robot.ball_pos_arr[-1]) >= 0.25:
         if abs(robot.ball_pos_arr[-1][1]) >= 0.2:
             if robot.ball_pos_arr[-1][1] >= 0:
                 sign = 1
-                coord = [-0.69, -0.1]
+                coord = [-0.66, -0.1]
             else:
                 sign = -1
                 coord = [-0.66, 0.1]
@@ -800,9 +820,12 @@ def receive_pass(robot: RCJSoccerRobot):
         else:
             stop_all(robot)
     else:
-        move_to_point(robot, robot.ball_pos_arr[-1])
+        if robot.robot_pos_arr[-1][0] <= -0.68:
+            stop_all(robot)
+        else:
+            robot.set_left_vel(10)
+            robot.set_right_vel(10)
         # stop_all(robot)
-
 
 def ready_to_defend(robot: RCJSoccerRobot):
     if robot.flags["ready_to_push"] and get_dist(robot.robot_pos_arr[-1], robot.ball_pos_arr[-1]) <= 0.09:

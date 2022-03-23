@@ -58,7 +58,7 @@ class RCJSoccerRobot:
         self.my_goals = 0
         self.enemy_goals = 0
         self.ball_pos_arr = []
-        self.previous_ball_pos = (0, 0)
+        self.previous_ball_pos = [0, 0]
         self.robot_pos_arr = []
         self.time_steps_arr = []
         self.temp_ball_speeds = []
@@ -74,7 +74,7 @@ class RCJSoccerRobot:
         self.enemy_goal = [(-0.72, 0.35), (-0.72, 0), (-0.72, -0.35)]
 
         """
-        -1. Go to origin 
+        -1. Go to origin
          1. intercept
          2. defend
          3. ready_to_defend
@@ -83,8 +83,8 @@ class RCJSoccerRobot:
          6. corner up
          7. corner down
          8. relocation
-         9. Attack
-        
+         9. attack
+         10. pass receiver
         """
         self.roles = [-1, -1, -1]
 
@@ -159,7 +159,8 @@ class RCJSoccerRobot:
             "arrived at corner": False,
             "ready_to_push": False,
             "go_to_down_corner": False,
-            "defense_signal": False
+            "defense_signal": False,
+            "ball is close": False
         }
 
         self.start_time = time.time()

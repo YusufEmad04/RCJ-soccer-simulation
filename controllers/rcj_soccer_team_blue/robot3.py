@@ -21,7 +21,7 @@ class MyRobot3(RCJSoccerRobot):
                 data = receive_data(self)
                 # print("id: {}, {}".format(self.player_id,self.team_data))
                 check_strategy(self)
-                print("robot 3: {}".format(self.roles[2]))
+                # print("robot 3: {}".format(self.roles[2]))
                 # adjust_heading_to_angle(self, 90)
                 # self.set_left_vel(0)
                 # self.set_right_vel(0)

@@ -20,7 +20,7 @@ class MyRobot2(RCJSoccerRobot):
                 data = receive_data(self)
                 # print("id: {}, {}".format(self.player_id,self.team_data))
                 check_strategy(self)
-                print("robot 2: {}".format(self.roles[1]))
+                # print("robot 2: {}".format(self.roles[1]))
                 # self.set_left_vel(0)
                 # self.set_right_vel(0)
 

@@ -20,7 +20,7 @@ class MyRobot1(RCJSoccerRobot):
                 data = receive_data(self)
                 # assign_role(self)
                 check_strategy(self)
-                print("robot 1: {}".format(self.roles[0]))
+                # print("robot 1: {}".format(self.roles[0]))
 
                 # get_real_ball_status(self)
                 # if self.ball_status in [1, 4]:

@@ -379,20 +379,28 @@ def adjust_heading(robot: RCJSoccerRobot, obj):
         robot.set_right_vel(0)
 
 
-def adjust_heading_to_angle(robot: RCJSoccerRobot, angle, s=10):
+def adjust_heading_to_angle(robot: RCJSoccerRobot, wanted_angle, s=10):
     heading = robot.heading
-    if heading > angle:
 
-        if heading - angle >= 350:
+    angle = robot.heading - wanted_angle
+    if abs(angle) >= 90:
+        if wanted_angle > 0:
+            wanted_angle -= 180
+        else:
+            wanted_angle += 180
+
+    if heading > wanted_angle:
+
+        if heading - wanted_angle >= 350:
             robot.set_left_vel(0)
             robot.set_right_vel(0)
             return True
-        elif max(abs(heading), abs(angle)) - min(abs(heading), abs(angle)) < 10:
+        elif heading - wanted_angle < 10:
             robot.set_left_vel(0)
             robot.set_right_vel(0)
             return True
 
-        if heading - angle > 180:
+        if heading - wanted_angle > 180:
             robot.set_right_vel(s)
             robot.set_left_vel(-s)
         else:
@@ -400,16 +408,16 @@ def adjust_heading_to_angle(robot: RCJSoccerRobot, angle, s=10):
             robot.set_left_vel(s)
     else:
 
-        if heading - angle <= -350:
+        if heading - wanted_angle <= -350:
             robot.set_left_vel(0)
             robot.set_right_vel(0)
             return True
-        elif max(abs(heading), abs(angle)) - min(abs(heading), abs(angle)) < 10:
+        elif heading - wanted_angle > -10:
             robot.set_left_vel(0)
             robot.set_right_vel(0)
             return True
 
-        if heading - angle < -180:
+        if heading - wanted_angle < -180:
             robot.set_right_vel(-s)
             robot.set_left_vel(s)
         else:
@@ -571,7 +579,7 @@ def check_ball_status(robot: RCJSoccerRobot):
         add_to_arr(robot.ball_status_arr, conditions[1])
     elif ball_pos[0] > 0.45 and abs(ball_pos[1]) > 0.20:
         add_to_arr(robot.ball_status_arr, conditions[2])
-    elif ball_pos[0] > 0:
+    elif ball_pos[0] > 0.2:
         add_to_arr(robot.ball_status_arr, conditions[3])
     else:
         add_to_arr(robot.ball_status_arr, conditions[4])
@@ -661,15 +669,7 @@ def go_to_corner2(robot: RCJSoccerRobot):
         if (corner[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= corner[0] + 0.04) and (
                 corner[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= corner[1] + 0.04):
             robot.flags["arrived at corner"] = True
-            angle = robot.heading - 135
-            if abs(angle) < 90:
-                adjust_heading_to_angle(robot, 135, 5)
-            else:
-                if angle < 0:
-                    angle += 180
-                else:
-                    angle -= 180
-                adjust_heading_to_angle(robot, angle, 5)
+            adjust_heading_to_angle(robot, 135, 5)
         else:
             angle = get_coord_angle(robot.robot_pos_arr[-1], robot.heading, corner)
             if abs(angle) > 90:
@@ -685,15 +685,7 @@ def go_to_corner2(robot: RCJSoccerRobot):
         if (corner[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= corner[0] + 0.04) and (
                 corner[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= corner[1] + 0.04):
             robot.flags["arrived at corner"] = True
-            angle = robot.heading - 45
-            if abs(angle) < 90:
-                adjust_heading_to_angle(robot, 45, 5)
-            else:
-                if angle < 0:
-                    angle += 180
-                else:
-                    angle -= 180
-                adjust_heading_to_angle(robot, angle, 5)
+            adjust_heading_to_angle(robot, 45, 5)
         else:
             angle = get_coord_angle(robot.robot_pos_arr[-1], robot.heading, corner)
             if abs(angle) > 90:
@@ -802,7 +794,7 @@ def receive_pass(robot: RCJSoccerRobot):
         if abs(robot.ball_pos_arr[-1][1]) >= 0.2:
             if robot.ball_pos_arr[-1][1] >= 0:
                 sign = 1
-                coord = [-0.69, -0.1]
+                coord = [-0.66, -0.1]
             else:
                 sign = -1
                 coord = [-0.66, 0.1]
@@ -1741,7 +1733,7 @@ def adjust_robot_stuck_timer(robot: RCJSoccerRobot):
                 robot.stuck_pos = [0, 0]
 
 
-def mimic(robot: RCJSoccerRobot, x=0.45):
+def mimic(robot: RCJSoccerRobot, x=0.2):
     # if robot.flags["robot is stuck"] and (15 >= time.time() - robot.stuck_timer >= 10):
     #     move_to_point(robot, robot.ball_pos_arr[-1])
     # else:

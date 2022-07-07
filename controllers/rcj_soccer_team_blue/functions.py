@@ -579,7 +579,7 @@ def check_ball_status(robot: RCJSoccerRobot):
         add_to_arr(robot.ball_status_arr, conditions[1])
     elif ball_pos[0] > 0.45 and abs(ball_pos[1]) > 0.20:
         add_to_arr(robot.ball_status_arr, conditions[2])
-    elif ball_pos[0] > 0.2:
+    elif ball_pos[0] > 0:
         add_to_arr(robot.ball_status_arr, conditions[3])
     else:
         add_to_arr(robot.ball_status_arr, conditions[4])
@@ -1733,7 +1733,7 @@ def adjust_robot_stuck_timer(robot: RCJSoccerRobot):
                 robot.stuck_pos = [0, 0]
 
 
-def mimic(robot: RCJSoccerRobot, x=0.2):
+def mimic(robot: RCJSoccerRobot, x=0.52):
     # if robot.flags["robot is stuck"] and (15 >= time.time() - robot.stuck_timer >= 10):
     #     move_to_point(robot, robot.ball_pos_arr[-1])
     # else:

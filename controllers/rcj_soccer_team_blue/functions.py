@@ -1554,7 +1554,7 @@ def check_for_relocation_data(robot: RCJSoccerRobot):
 
 
 def check_for_relocation(robot: RCJSoccerRobot):
-    if robot.stuck and robot.time_step > 8:
+    if robot.stuck and robot.timer > 8:
         if not robot.ball_pos_arr:
             robot.ready_for_relocation = True
         else:
@@ -1738,15 +1738,23 @@ def mimic(robot: RCJSoccerRobot, x=0.52):
     #     move_to_point(robot, robot.ball_pos_arr[-1])
     # else:
 
+    if abs(robot.ball_pos_arr[-1][1]) > 0.19:
+        if robot.ball_pos_arr[-1][1] > 0:
+            ball_y = 0.19
+        else:
+            ball_y = -0.19
+    else:
+        ball_y = robot.ball_pos_arr[-1][1]
+
     if abs(robot.robot_pos_arr[-1][0] - x) > 0.1:
         robot.flags["adjusted heading"] = False
 
     if abs(robot.robot_pos_arr[-1][0] - x) > 0.05:
-        move_to_point(robot, [x, robot.ball_pos_arr[-1][1]])
+        move_to_point(robot, [x, ball_y])
     else:
 
         if robot.flags["adjusted heading"]:
-            coord = [x, robot.ball_pos_arr[-1][1]]
+            coord = [x, ball_y]
 
             if (coord[0] - 0.04 <= robot.robot_pos_arr[-1][0] <= coord[0] + 0.04) and (
                     coord[1] - 0.04 <= robot.robot_pos_arr[-1][1] <= coord[1] + 0.04):
